@@ -2,7 +2,15 @@ import { Order, Restaurant } from '../models/models.js'
 
 // TODO: Implement the following function to check if the order belongs to current loggedIn customer (order.userId equals or not to req.user.id)
 const checkOrderCustomer = async (req, res, next) => {
-  return next()
+  try {
+    const order = await Order.findByPk(req.params.orderId)
+    if (req.user.id === order.userId) {
+      return next()
+    }
+    return res.status(403).send('Not enough privileges. This entity does not belong to you')
+  } catch (err) {
+    return res.status(500).send(err)
+  }
 }
 
 // TODO: Implement the following function to check if the restaurant of the order exists
