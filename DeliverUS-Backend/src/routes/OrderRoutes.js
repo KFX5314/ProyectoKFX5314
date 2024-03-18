@@ -1,6 +1,8 @@
 import OrderController from '../controllers/OrderController.js'
+// import OrderValidation from '../controllers/validation/OrderValidation.js'
 import { hasRole, isLoggedIn } from '../middlewares/AuthMiddleware.js'
 import { checkEntityExists } from '../middlewares/EntityMiddleware.js'
+// import { handleValidation } from '../middlewares/ValidationHandlingMiddleware.js'
 import * as OrderMiddleware from '../middlewares/OrderMiddleware.js'
 import { Order } from '../models/models.js'
 
@@ -8,7 +10,18 @@ const loadFileRoutes = function (app) {
   // TODO: Include routes for:
   // 1. Retrieving orders from current logged-in customer
   // 2. Creating a new order (only customers can create new orders)
-
+  app.route('/orders')
+    .get(
+      isLoggedIn,
+      OrderController.indexCustomer)
+    // Se queda comentado hasta hacer el create y las validaciones
+    // .post(
+    //  isLoggedIn,
+    //  hasRole('user'),
+    //  OrderValidation.create,
+    //  handleValidation,
+    //  OrderController.create
+    // )
   app.route('/orders/:orderId/confirm')
     .patch(
       isLoggedIn,
