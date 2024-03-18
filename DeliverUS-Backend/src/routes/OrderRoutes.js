@@ -7,7 +7,7 @@ import * as OrderMiddleware from '../middlewares/OrderMiddleware.js'
 import { Order } from '../models/models.js'
 
 const loadFileRoutes = function (app) {
-  // TODO: Include routes for:
+  // DONE: Include routes for:
   // 1. Retrieving orders from current logged-in customer
   // 2. Creating a new order (only customers can create new orders)
   app.route('/orders')

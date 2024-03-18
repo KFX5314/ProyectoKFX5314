@@ -1,6 +1,6 @@
 import { Order, Restaurant } from '../models/models.js'
 
-// TODO: Implement the following function to check if the order belongs to current loggedIn customer (order.userId equals or not to req.user.id)
+// DONE: Implement the following function to check if the order belongs to current loggedIn customer (order.userId equals or not to req.user.id)
 const checkOrderCustomer = async (req, res, next) => {
   try {
     const order = await Order.findByPk(req.params.orderId)
@@ -13,7 +13,7 @@ const checkOrderCustomer = async (req, res, next) => {
   }
 }
 
-// TODO: Implement the following function to check if the restaurant of the order exists
+// DONE: Implement the following function to check if the restaurant of the order exists
 const checkRestaurantExists = async (req, res, next) => {
   try {
     const order = await Order.findByPk(req.params.orderId)

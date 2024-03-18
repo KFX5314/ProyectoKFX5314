@@ -84,7 +84,7 @@ const indexRestaurant = async function (req, res) {
   }
 }
 
-// TODO: Implement the indexCustomer function that queries orders from current logged-in customer and send them back.
+// DONE: Implement the indexCustomer function that queries orders from current logged-in customer and send them back.
 // Orders have to include products that belongs to each order and restaurant details
 // sort them by createdAt date, desc.
 const indexCustomer = async function (req, res) {
