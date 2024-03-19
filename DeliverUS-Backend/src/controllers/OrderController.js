@@ -133,11 +133,32 @@ const update = async function (req, res) {
   res.status(500).send('This function is to be implemented')
 }
 
-// TODO: Implement the destroy function that receives an orderId as path param and removes the associated order from the database.
+// DONE: Implement the destroy function that receives an orderId as path param and removes the associated order from the database.
 // Take into account that:
 // 1. The migration include the "ON DELETE CASCADE" directive so OrderProducts related to this order will be automatically removed.
 const destroy = async function (req, res) {
-  res.status(500).send('This function is to be implemented')
+  try {
+    const order = await Order.findByPk(req.params.orderId)
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order Not Found' })
+    }
+
+    if (order.userId !== req.userId) {
+      res.status(403).json({ error: 'Not Authorized' })
+      return
+    }
+
+    if (order.status !== 'pending') {
+      res.status(409).json({ error: `Order is ${order.status}` })
+      return
+    }
+
+    await order.destroy()
+    res.json({ success: true })
+  } catch (err) {
+    res.status(500).send(err)
+  }
 }
 
 const confirm = async function (req, res) {
