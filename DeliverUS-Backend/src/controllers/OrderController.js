@@ -144,7 +144,7 @@ const destroy = async function (req, res) {
       return res.status(404).json({ error: 'Order Not Found' })
     }
 
-    if (order.userId !== req.userId) {
+    if (order.userId !== req.user.id) {
       res.status(403).json({ error: 'Not Authorized' })
       return
     }
