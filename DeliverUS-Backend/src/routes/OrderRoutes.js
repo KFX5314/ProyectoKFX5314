@@ -58,14 +58,14 @@ const loadFileRoutes = function (app) {
 
   // DONE: Include routes for:
   // 3. Editing order (only customers can edit their own orders)
-  //  .put(
-  //    isLoggedIn,
-  //    hasRole('user'),
-  //    checkEntityExists(Order, 'orderId'),
-  //    OrderMiddleware.checkOrderCustomer,
-  //    OrderValidation.update,
-  //    handleValidation,
-  //    OrderController.update)
+    .put(
+      isLoggedIn,
+      hasRole('customer'),
+      checkEntityExists(Order, 'orderId'),
+      OrderMiddleware.checkOrderCustomer,
+      // OrderValidation.update,
+      // handleValidation,
+      OrderController.update)
   // 4. Remove order (only customers can remove their own orders)
     .delete(
       isLoggedIn,
