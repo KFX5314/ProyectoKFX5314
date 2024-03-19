@@ -14,15 +14,15 @@ const loadFileRoutes = function (app) {
     .get(
       isLoggedIn,
       OrderController.indexCustomer)
-    // Se queda comentado hasta hacer el create y las validaciones
-    // .post(
-    //  isLoggedIn,
-    //  hasRole('user'),
-    //  OrderValidation.create,
-    //  handleValidation,
-    //  OrderController.create
-    // )
-    
+    .post(
+      isLoggedIn,
+      hasRole('customer'),
+      OrderMiddleware.checkRestaurantExists,
+      // OrderValidation.create,
+      // handleValidation,
+      OrderController.create
+    )
+
   app.route('/orders/:orderId/confirm')
     .patch(
       isLoggedIn,
@@ -66,9 +66,9 @@ const loadFileRoutes = function (app) {
   //    handleValidation,
   //    OrderController.update)
   // 4. Remove order (only customers can remove their own orders)
-    .put(
+    .delete(
       isLoggedIn,
-      hasRole('user'),
+      hasRole('customer'),
       checkEntityExists(Order, 'orderId'),
       OrderMiddleware.checkOrderCustomer,
       OrderMiddleware.checkOrderIsPending,
