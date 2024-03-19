@@ -97,6 +97,10 @@ const indexCustomer = async function (req, res) {
           {
             model: Product,
             as: 'products'
+          },
+          {
+            model: Restaurant,
+            as: 'restaurant'
           }
         ],
         order: [['createdAt', 'DESC']]
