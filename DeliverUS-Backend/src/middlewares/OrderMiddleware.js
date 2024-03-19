@@ -19,6 +19,7 @@ const checkRestaurantExists = async (req, res, next) => {
     const order = await Order.findByPk(req.params.orderId)
     // No se si hace falta comprobar que la orden existe pero me parece que tenia sentido
     // hacerlo antes de comprobar si existe su restaurante
+    // Lo tiene, toda comprobacion es buena
     if (!order) {
       return res.status(404).send('Order not found')
     }

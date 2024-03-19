@@ -22,6 +22,7 @@ const loadFileRoutes = function (app) {
     //  handleValidation,
     //  OrderController.create
     // )
+    
   app.route('/orders/:orderId/confirm')
     .patch(
       isLoggedIn,
@@ -38,7 +39,6 @@ const loadFileRoutes = function (app) {
       OrderMiddleware.checkOrderOwnership,
       OrderMiddleware.checkOrderCanBeSent,
       OrderController.send)
-
   app.route('/orders/:orderId/deliver')
     .patch(
       isLoggedIn,
@@ -48,15 +48,31 @@ const loadFileRoutes = function (app) {
       OrderMiddleware.checkOrderCanBeDelivered,
       OrderController.deliver)
 
-  // TODO: Include routes for:
-  // 3. Editing order (only customers can edit their own orders)
-  // 4. Remove order (only customers can remove their own orders)
   app.route('/orders/:orderId')
     .get(
       isLoggedIn,
       checkEntityExists(Order, 'orderId'),
       OrderMiddleware.checkOrderVisible,
       OrderController.show)
+
+  // DONE: Include routes for:
+  // 3. Editing order (only customers can edit their own orders)
+  //  .put(
+  //    isLoggedIn,
+  //    hasRole('user'),
+  //    checkEntityExists(Order, 'orderId'),
+  //    OrderMiddleware.checkOrderCustomer,
+  //    OrderValidation.update,
+  //    handleValidation,
+  //    OrderController.update)
+  // 4. Remove order (only customers can remove their own orders)
+    .put(
+      isLoggedIn,
+      hasRole('user'),
+      checkEntityExists(Order, 'orderId'),
+      OrderMiddleware.checkOrderCustomer,
+      OrderMiddleware.checkOrderIsPending,
+      OrderController.destroy)
 }
 
 export default loadFileRoutes
