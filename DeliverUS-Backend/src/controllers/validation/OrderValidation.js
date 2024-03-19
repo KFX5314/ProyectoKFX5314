@@ -5,7 +5,7 @@
 // 4. Check that all the products belong to the same restaurant
 
 import { check } from 'express-validator'
-import { checkProducts} from '../../middlewares/OrderMiddleware'//TENGO K HACERLO OLA
+import { checkProducts, checkOrderIsPending} from '../../middlewares/OrderMiddleware'
 import { checkRestaurantExists } from '../../middlewares/OrderMiddleware'
 
 const create = [
@@ -13,7 +13,7 @@ const create = [
     check('products').exists().isArray({ min: 1 }).custom(checkProducts)
 
     ]
-// ONIT: Include validation rules for update that should:
+// DONE: Include validation rules for update that should:
 // 1. Check that restaurantId is NOT present in the body.
 // 2. Check that products is a non-empty array composed of objects with productId and quantity greater than 0
 // 3. Check that products are available
@@ -22,6 +22,7 @@ const create = [
 const update = [
     check('restaurantId').not().exists(),
     check('products').exists().isArray({ min: 1 }) .custom(checkProducts),
+    check('products').exists().isArray({ min: 1 }) .custom(checkOrderIsPending),
 
 ]
 
