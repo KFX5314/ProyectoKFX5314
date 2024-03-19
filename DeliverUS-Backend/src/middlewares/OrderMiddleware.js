@@ -100,4 +100,34 @@ const checkOrderCanBeDelivered = async (req, res, next) => {
   }
 }
 
+// 
+const checkProducts = async (req, res, next) => {
+  try {
+    const orderId = req.params.orderId;
+    const order = await Order.findByPk(orderId, { include: 'products' });
+    if (!order) {
+      return res.status(404).send('Order not found');
+    }
+    const products = order.products;
+    if (!products || products.length === 0) {
+      return res.status(400).send('No products found in the order');
+    }
+    const restaurant = order.restaurantId;
+    for (const product of products)
+    {
+      if (!product.productId || product.restaurantId != restaurant || product.availability != 1) 
+      {
+        return res.status(409).send('The order cannot be delivered')
+      }
+    }
+    req.order = order; 
+    req.products = products; 
+    next();
+  } catch (err) {
+    console.error('Error checking products:', err);
+    return res.status(500).send('Internal Server Error');
+  }
+}
+
+export { checkProducts };
 export { checkOrderOwnership, checkOrderCustomer, checkOrderVisible, checkOrderIsPending, checkOrderCanBeSent, checkOrderCanBeDelivered, checkRestaurantExists }
