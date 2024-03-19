@@ -96,12 +96,9 @@ const indexCustomer = async function (req, res) {
         include: [
           {
             model: Product,
-            as: 'product'
-          },
-          {
-            model: Restaurant,
-            as: 'restaurant'
-          }],
+            as: 'products'
+          }
+        ],
         order: [['createdAt', 'DESC']]
       })
     res.json(orders)

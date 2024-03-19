@@ -13,6 +13,7 @@ const loadFileRoutes = function (app) {
   app.route('/orders')
     .get(
       isLoggedIn,
+      hasRole('customer'),
       OrderController.indexCustomer)
     .post(
       isLoggedIn,
