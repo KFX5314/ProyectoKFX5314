@@ -96,12 +96,9 @@ const indexCustomer = async function (req, res) {
         include: [
           {
             model: Product,
-            as: 'product'
-          },
-          {
-            model: Restaurant,
-            as: 'restaurant'
-          }],
+            as: 'products'
+          }
+        ],
         order: [['createdAt', 'DESC']]
       })
     res.json(orders)
@@ -110,7 +107,7 @@ const indexCustomer = async function (req, res) {
   }
 }
 
-// TODO: Implement the create function that receives a new order and stores it in the database.
+// ONIT: Implement the create function that receives a new order and stores it in the database.
 // Take into account that:
 // 1. If price is greater than 10€, shipping costs have to be 0.
 // 2. If price is less or equals to 10€, shipping costs have to be restaurant default shipping costs and have to be added to the order total price
@@ -118,8 +115,17 @@ const indexCustomer = async function (req, res) {
 // 4. If an exception is raised, catch it and rollback the transaction
 
 const create = async (req, res) => {
-  // Use sequelizeSession to start a transaction
-  res.status(500).send('This function is to be implemented')
+  let newOrder = Order.build(req.body)
+  // TODO: shipping costs
+  // TODO: transaction
+  // TODO: save products
+
+  try {
+    newOrder = await newOrder.save()
+    res.json(newOrder)
+  } catch (err) {
+    res.status(500).send(err)
+  }
 }
 
 // TODO: Implement the update function that receives a modified order and persists it in the database.
@@ -139,22 +145,8 @@ const update = async function (req, res) {
 const destroy = async function (req, res) {
   try {
     const order = await Order.findByPk(req.params.orderId)
-
-    if (!order) {
-      return res.status(404).json({ error: 'Order Not Found' })
-    }
-
-    if (order.userId !== req.user.id) {
-      res.status(403).json({ error: 'Not Authorized' })
-      return
-    }
-
-    if (order.status !== 'pending') {
-      res.status(409).json({ error: `Order is ${order.status}` })
-      return
-    }
-
     await order.destroy()
+
     res.json({ success: true })
   } catch (err) {
     res.status(500).send(err)

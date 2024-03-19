@@ -13,16 +13,17 @@ const loadFileRoutes = function (app) {
   app.route('/orders')
     .get(
       isLoggedIn,
+      hasRole('customer'),
       OrderController.indexCustomer)
-    // Se queda comentado hasta hacer el create y las validaciones
-    // .post(
-    //  isLoggedIn,
-    //  hasRole('user'),
-    //  OrderValidation.create,
-    //  handleValidation,
-    //  OrderController.create
-    // )
-    
+    .post(
+      isLoggedIn,
+      hasRole('customer'),
+      OrderMiddleware.checkRestaurantExists,
+      // OrderValidation.create,
+      // handleValidation,
+      OrderController.create
+    )
+
   app.route('/orders/:orderId/confirm')
     .patch(
       isLoggedIn,
@@ -57,18 +58,18 @@ const loadFileRoutes = function (app) {
 
   // DONE: Include routes for:
   // 3. Editing order (only customers can edit their own orders)
-  //  .put(
-  //    isLoggedIn,
-  //    hasRole('user'),
-  //    checkEntityExists(Order, 'orderId'),
-  //    OrderMiddleware.checkOrderCustomer,
-  //    OrderValidation.update,
-  //    handleValidation,
-  //    OrderController.update)
-  // 4. Remove order (only customers can remove their own orders)
     .put(
       isLoggedIn,
-      hasRole('user'),
+      hasRole('customer'),
+      checkEntityExists(Order, 'orderId'),
+      OrderMiddleware.checkOrderCustomer,
+      // OrderValidation.update,
+      // handleValidation,
+      OrderController.update)
+  // 4. Remove order (only customers can remove their own orders)
+    .delete(
+      isLoggedIn,
+      hasRole('customer'),
       checkEntityExists(Order, 'orderId'),
       OrderMiddleware.checkOrderCustomer,
       OrderMiddleware.checkOrderIsPending,
