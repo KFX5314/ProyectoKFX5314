@@ -5,35 +5,49 @@
 // 4. Check that all the products belong to the same restaurant
 
 import { check } from 'express-validator'
-import { checkOrderIsPending} from '../../middlewares/OrderMiddleware'
-import { checkRestaurantExists } from '../../middlewares/OrderMiddleware'
 
-// 
-const checkProducts = async (req, res, next) => {
+const checkRestaurantExists = async (value, { req }) => {
+  try {
+    const restaurant = await Restaurant.findByPk(req.body.restaurantId)
+    if (restaurant === null) {
+      return Promise.reject(new Error('The restaurantId does not exist.'))
+    } else { return Promise.resolve() }
+  } catch (err) {
+    return Promise.reject(new Error(err))
+  }
+}
+
+const checkOrderIsPending = async (value, { req }) => {
+  try {
+    const order = await Order.findByPk(req.params.orderId)
+    const isPending = !order.startedAt
+    if (isPending) {
+      return Promise.resolve()
+    } else {
+      return Promise.reject(new Error('The order has already been started'))
+    }
+  } catch (err) {
+    return Promise.reject(new Error(err))
+  }
+}
+
+const checkProducts = async (value, { req }) => {
     try {
-      const orderId = req.params.orderId;
-      const order = await Order.findByPk(orderId, { include: 'products' });
-      if (!order) {
-        return res.status(404).send('Order not found');
-      }
-      const products = order.products;
+      const products = req.body.products;
       if (!products || products.length === 0) {
-        return res.status(400).send('No products found in the order');
+        return Promise.reject(new Error('No products found in the order'));
       }
-      const restaurant = order.restaurantId;
+      const restaurant = req.body.restaurantId;
       for (const product of products)
       {
         if (!product.productId || product.restaurantId != restaurant || product.availability != 1) 
         {
-          return res.status(409).send('The order cannot be delivered')
+          return Promise.reject(new Error('The order cannot be delivered'));
         }
       }
-      req.order = order; 
-      req.products = products; 
-      next();
+      return Promise.resolve()
     } catch (err) {
-      console.error('Error checking products:', err);
-      return res.status(500).send('Internal Server Error');
+      return Promise.reject(err)
     }
   }
   
@@ -50,7 +64,7 @@ const create = [
 const update = [
     check('restaurantId').not().exists(),
     check('products').exists().isArray({ min: 1 }).custom(checkProducts),
-    check('products').exists().isArray({ min: 1 }).custom(checkOrderIsPending),
+    check('orderId').exists().custom(checkOrderIsPending)
 ]
 
 export { create, update }
