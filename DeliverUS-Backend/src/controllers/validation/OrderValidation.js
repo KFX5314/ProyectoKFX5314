@@ -5,6 +5,7 @@
 // 4. Check that all the products belong to the same restaurant
 
 import { check } from 'express-validator'
+import { Restaurant, Order } from 'models'
 
 const checkRestaurantExists = async (value, { req }) => {
   try {
@@ -32,29 +33,27 @@ const checkOrderIsPending = async (value, { req }) => {
 }
 
 const checkProducts = async (value, { req }) => {
-    try {
-      const products = req.body.products;
-      if (!products || products.length === 0) {
-        return Promise.reject(new Error('No products found in the order'));
-      }
-      const restaurant = req.body.restaurantId;
-      for (const product of products)
-      {
-        if (!product.productId || product.restaurantId != restaurant || product.availability != 1) 
-        {
-          return Promise.reject(new Error('The order cannot be delivered'));
-        }
-      }
-      return Promise.resolve()
-    } catch (err) {
-      return Promise.reject(err)
+  try {
+    const products = req.body.products
+    if (!products || products.length === 0) {
+      return Promise.reject(new Error('No products found in the order'))
     }
+    const restaurant = req.body.restaurantId
+    for (const product of products) {
+      if (!product.productId || product.restaurantId !== restaurant || product.availability !== 1) {
+        return Promise.reject(new Error('The order cannot be delivered'))
+      }
+    }
+    return Promise.resolve()
+  } catch (err) {
+    return Promise.reject(err)
   }
-  
+}
+
 const create = [
-    check('restaurantId').exists().isInt({ min: 1 }).toInt().custom(checkRestaurantExists),
-    check('products').exists().isArray({ min: 1 }).custom(checkProducts)
-    ]
+  check('restaurantId').exists().isInt({ min: 1 }).toInt().custom(checkRestaurantExists),
+  check('products').exists().isArray({ min: 1 }).custom(checkProducts)
+]
 // DONE: Include validation rules for update that should:
 // 1. Check that restaurantId is NOT present in the body.
 // 2. Check that products is a non-empty array composed of objects with productId and quantity greater than 0
@@ -62,9 +61,9 @@ const create = [
 // 4. Check that all the products belong to the same restaurant of the originally saved order that is being edited.
 // 5. Check that the order is in the 'pending' state.
 const update = [
-    check('restaurantId').not().exists(),
-    check('products').exists().isArray({ min: 1 }).custom(checkProducts),
-    check('orderId').exists().custom(checkOrderIsPending)
+  check('restaurantId').not().exists(),
+  check('products').exists().isArray({ min: 1 }).custom(checkProducts),
+  check('orderId').exists().custom(checkOrderIsPending)
 ]
 
 export { create, update }
