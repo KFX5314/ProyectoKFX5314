@@ -132,15 +132,35 @@ const create = async (req, res) => {
   }
 }
 
-// TODO: Implement the update function that receives a modified order and persists it in the database.
+// ONIT: Implement the update function that receives a modified order and persists it in the database.
 // Take into account that:
 // 1. If price is greater than 10€, shipping costs have to be 0.
 // 2. If price is less or equals to 10€, shipping costs have to be restaurant default shipping costs and have to be added to the order total price
 // 3. In order to save the updated order and updated products, start a transaction, update the order, remove the old related OrderProducts and store the new product lines, and commit the transaction
 // 4. If an exception is raised, catch it and rollback the transaction
 const update = async function (req, res) {
-  // Use sequelizeSession to start a transaction
-  res.status(500).send('This function is to be implemented')
+  // Inicia la transacción utilizando sequelizeSession
+  const transaction = await sequelizeSession.transaction()
+  try {
+    let modifiedOrder = req.body
+    let shippingCosts = 0
+    if (modifiedOrder.price > 10) {
+      shippingCosts = 0
+    } else {
+      const restaurant = await Restaurant.findByPk(modifiedOrder.restaurantId)
+      if (restaurant) {
+        shippingCosts = restaurant.defaultShippingCosts
+      }
+    }
+    modifiedOrder.shippingCosts = shippingCosts
+    modifiedOrder = await modifiedOrder.save({ transaction })
+    await Order.update(modifiedOrder, { where: { id: req.params.orderId }, transaction })
+    await transaction.commit()
+    res.json(modifiedOrder)
+  } catch (err) {
+    await transaction.rollback()
+    res.status(500).send(err)
+  }
 }
 
 // DONE: Implement the destroy function that receives an orderId as path param and removes the associated order from the database.
