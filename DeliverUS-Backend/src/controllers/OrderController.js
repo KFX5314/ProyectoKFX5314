@@ -91,7 +91,6 @@ const indexCustomer = async function (req, res) {
   try {
     const orders = await Order.findAll(
       {
-        attributes: { exclude: ['userId'] },
         where: { userId: req.user.id },
         include: [
           {
