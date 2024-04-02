@@ -164,17 +164,28 @@ const update = async function (req, res) {
   const transaction = await sequelizeSession.transaction()
   try {
     let modifiedOrder = req.body
-    let shippingCosts = 0
-    if (modifiedOrder.price > 10) {
-      shippingCosts = 0
-    } else {
-      const restaurant = await Restaurant.findByPk(modifiedOrder.restaurantId)
-      shippingCosts = restaurant.defaultShippingCosts
+    const restaurant = await Restaurant.findByPk(req.body.restaurantId)
+    let precio = 0.0
+    for (const product of req.body.products) {
+      const databaseProduct = await Product.findByPk(product.productId)
+      precio += product.quantity * databaseProduct.price
     }
-    modifiedOrder.shippingCosts = shippingCosts
-    modifiedOrder.price += shippingCosts
+    if (precio > 10) {
+      modifiedOrder.shippingCosts = 0.0
+    } else {
+      modifiedOrder.shippingCosts = restaurant.shippingCosts
+    }
+    modifiedOrder.price = precio + modifiedOrder.shippingCosts
     modifiedOrder = await modifiedOrder.save({ transaction })
     await Order.update(modifiedOrder, { where: { id: req.params.orderId }, transaction })
+    const updatedOrder = await Order.findByPk(modifiedOrder.orderId)
+    for (const product of updatedOrder.products) {
+      await product.destroy()
+    }
+    for (const product of req.body.products) {
+      const databaseProduct = await Product.findByPk(product.productId)
+      await updatedOrder.addProduct(databaseProduct, { through: { quantity: product.quantity, unityPrice: databaseProduct.price }, transaction })
+    }
     await transaction.commit()
     res.json(modifiedOrder)
   } catch (err) {
