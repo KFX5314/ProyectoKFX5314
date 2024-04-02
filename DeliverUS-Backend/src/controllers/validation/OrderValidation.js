@@ -5,7 +5,7 @@
 // 4. Check that all the products belong to the same restaurant
 
 import { check } from 'express-validator'
-import { Restaurant, Order } from 'models'
+import { Restaurant, Order } from '../../models/models.js'
 
 const checkRestaurantExists = async (value, { req }) => {
   try {
