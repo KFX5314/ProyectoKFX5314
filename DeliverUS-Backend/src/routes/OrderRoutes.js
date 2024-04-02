@@ -1,8 +1,8 @@
+import * as OrderValidation from '../controllers/validation/OrderValidation.js'
 import OrderController from '../controllers/OrderController.js'
-// import OrderValidation from '../controllers/validation/OrderValidation.js'
 import { hasRole, isLoggedIn } from '../middlewares/AuthMiddleware.js'
 import { checkEntityExists } from '../middlewares/EntityMiddleware.js'
-// import { handleValidation } from '../middlewares/ValidationHandlingMiddleware.js'
+import { handleValidation } from '../middlewares/ValidationHandlingMiddleware.js'
 import * as OrderMiddleware from '../middlewares/OrderMiddleware.js'
 import { Order } from '../models/models.js'
 
@@ -19,8 +19,8 @@ const loadFileRoutes = function (app) {
       isLoggedIn,
       hasRole('customer'),
       OrderMiddleware.checkRestaurantExists,
-      // OrderValidation.create,
-      // handleValidation,
+      OrderValidation.create,
+      handleValidation,
       OrderController.create
     )
 
@@ -64,7 +64,7 @@ const loadFileRoutes = function (app) {
       checkEntityExists(Order, 'orderId'),
       OrderMiddleware.checkOrderCustomer,
       // OrderValidation.update,
-      // handleValidation,
+      handleValidation,
       OrderController.update)
   // 4. Remove order (only customers can remove their own orders)
     .delete(

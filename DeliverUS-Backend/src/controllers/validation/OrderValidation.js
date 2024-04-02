@@ -10,7 +10,7 @@ import { Restaurant, Order } from 'models'
 const checkRestaurantExists = async (value, { req }) => {
   try {
     const restaurant = await Restaurant.findByPk(req.body.restaurantId)
-    if (restaurant === null) {
+    if (!restaurant) {
       return Promise.reject(new Error('The restaurantId does not exist.'))
     } else { return Promise.resolve() }
   } catch (err) {
@@ -51,8 +51,10 @@ const checkProducts = async (value, { req }) => {
 }
 
 const create = [
-  check('restaurantId').exists().isInt({ min: 1 }).toInt().custom(checkRestaurantExists),
-  check('products').exists().isArray({ min: 1 }).custom(checkProducts)
+  check('restaurantId').exists().isInt({ min: 1 }).toInt(),
+  check('restaurantId').custom(checkRestaurantExists),
+  check('products').exists().isArray({ min: 1 }),
+  check('products').custom(checkProducts)
 ]
 // DONE: Include validation rules for update that should:
 // 1. Check that restaurantId is NOT present in the body.
