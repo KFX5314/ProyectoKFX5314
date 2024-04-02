@@ -100,7 +100,8 @@ const indexCustomer = async function (req, res) {
           },
           {
             model: Restaurant,
-            as: 'restaurant'
+            as: 'restaurant',
+            attributes: { exclude: ['createdAt', 'updatedAt'] }
           }
         ],
         order: [['createdAt', 'DESC']]
@@ -119,15 +120,35 @@ const indexCustomer = async function (req, res) {
 // 4. If an exception is raised, catch it and rollback the transaction
 
 const create = async (req, res) => {
-  let newOrder = Order.build(req.body)
-  // TODO: shipping costs
-  // TODO: transaction
-  // TODO: save products
-
+  const transaction = await sequelizeSession.transaction()
   try {
-    newOrder = await newOrder.save()
+    let newOrder = Order.build(req.body)
+    newOrder.createdAt = Date.now()
+    newOrder.startedAt = null
+    newOrder.deliveredAt = null
+    newOrder.userId = req.user.id
+    const restaurant = await Restaurant.findByPk(req.body.restaurantId)
+    let precio = 0.0
+    for (const product of req.body.products) {
+      const databaseProduct = await Product.findByPk(product.productId)
+      precio += product.quantity * databaseProduct.price
+    }
+    if (precio > 10) {
+      newOrder.shippingCosts = 0.0
+    } else {
+      newOrder.shippingCosts = restaurant.shippingCosts
+    }
+    newOrder.price = precio + newOrder.shippingCosts
+    newOrder = await newOrder.save({ transaction })
+
+    for (const product of req.body.products) {
+      const databaseProduct = await Product.findByPk(product.productId)
+      await newOrder.addProduct(databaseProduct, { through: { quantity: product.quantity, unityPrice: databaseProduct.price }, transaction })
+    }
+    await transaction.commit()
     res.json(newOrder)
   } catch (err) {
+    await transaction.rollback()
     res.status(500).send(err)
   }
 }
@@ -148,11 +169,10 @@ const update = async function (req, res) {
       shippingCosts = 0
     } else {
       const restaurant = await Restaurant.findByPk(modifiedOrder.restaurantId)
-      if (restaurant) {
-        shippingCosts = restaurant.defaultShippingCosts
-      }
+      shippingCosts = restaurant.defaultShippingCosts
     }
     modifiedOrder.shippingCosts = shippingCosts
+    modifiedOrder.price += shippingCosts
     modifiedOrder = await modifiedOrder.save({ transaction })
     await Order.update(modifiedOrder, { where: { id: req.params.orderId }, transaction })
     await transaction.commit()
