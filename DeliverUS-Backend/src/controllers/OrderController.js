@@ -64,6 +64,23 @@ const generateFilterWhereClauses = function (req) {
   return filterWhereClauses
 }
 
+const getOrder = async (orderId) => {
+  return await Order.findByPk(orderId, {
+    include: [{
+      model: Product,
+      as: 'products'
+    }]
+  })
+}
+
+const getShippingCosts = (orderPrice, restaurant) => {
+  if (orderPrice > 10) {
+    return 0.0
+  } else {
+    return restaurant.shippingCosts
+  }
+}
+
 // Returns :restaurantId orders
 const indexRestaurant = async function (req, res) {
   const whereClauses = generateFilterWhereClauses(req)
@@ -73,10 +90,7 @@ const indexRestaurant = async function (req, res) {
   try {
     const orders = await Order.findAll({
       where: whereClauses,
-      include: {
-        model: Product,
-        as: 'products'
-      }
+      include: 'products'
     })
     res.json(orders)
   } catch (err) {
@@ -111,48 +125,49 @@ const indexCustomer = async function (req, res) {
   }
 }
 
-// ONIT: Implement the create function that receives a new order and stores it in the database.
+// DONE: Implement the create function that receives a new order and stores it in the database.
 // Take into account that:
 // 1. If price is greater than 10€, shipping costs have to be 0.
 // 2. If price is less or equals to 10€, shipping costs have to be restaurant default shipping costs and have to be added to the order total price
 // 3. In order to save the order and related products, start a transaction, store the order, store each product linea and commit the transaction
 // 4. If an exception is raised, catch it and rollback the transaction
-
 const create = async (req, res) => {
   const transaction = await sequelizeSession.transaction()
+
   try {
     let newOrder = Order.build(req.body)
     newOrder.createdAt = Date.now()
-    newOrder.startedAt = null
-    newOrder.deliveredAt = null
     newOrder.userId = req.user.id
+
     const restaurant = await Restaurant.findByPk(req.body.restaurantId)
+
     let precio = 0.0
     for (const product of req.body.products) {
       const dbProduct = await Product.findByPk(product.productId)
       precio += product.quantity * dbProduct.price
     }
-    if (precio > 10) {
-      newOrder.shippingCosts = 0.0
-    } else {
-      newOrder.shippingCosts = restaurant.shippingCosts
-    }
+
+    newOrder.shippingCosts = getShippingCosts(precio, restaurant)
     newOrder.price = precio + newOrder.shippingCosts
+
     newOrder = await newOrder.save({ transaction })
 
     for (const product of req.body.products) {
       const dbProduct = await Product.findByPk(product.productId)
       await newOrder.addProduct(dbProduct, { through: { quantity: product.quantity, unityPrice: dbProduct.price }, transaction })
     }
+
     await transaction.commit()
-    res.json(newOrder)
+
+    res.json(await getOrder(newOrder.id))
   } catch (err) {
     await transaction.rollback()
+
     res.status(500).send(err)
   }
 }
 
-// ONIT: Implement the update function that receives a modified order and persists it in the database.
+// DONE: Implement the update function that receives a modified order and persists it in the database.
 // Take into account that:
 // 1. If price is greater than 10€, shipping costs have to be 0.
 // 2. If price is less or equals to 10€, shipping costs have to be restaurant default shipping costs and have to be added to the order total price
@@ -161,33 +176,38 @@ const create = async (req, res) => {
 const update = async function (req, res) {
   // Inicia la transacción utilizando sequelizeSession
   const transaction = await sequelizeSession.transaction()
+
   try {
-    let modifiedOrder = req.body
     const oldOrder = await Order.findByPk(req.params.orderId)
+
+    let order = Order.build(req.body)
+    // order.id = req.params.orderId
+    // order.restaurantId = oldOrder.restaurantId
+    // order.userId = oldOrder.userId
+
+    await order.removeProducts({ transaction })
+
     const restaurant = await Restaurant.findByPk(oldOrder.restaurantId)
+
     let precio = 0.0
     for (const product of req.body.products) {
       const dbProduct = await Product.findByPk(product.productId)
       precio += product.quantity * dbProduct.price
     }
-    if (precio > 10) {
-      modifiedOrder.shippingCosts = 0.0
-    } else {
-      modifiedOrder.shippingCosts = restaurant.shippingCosts
-    }
-    modifiedOrder.price = precio + modifiedOrder.shippingCosts
-    modifiedOrder = await modifiedOrder.save({ transaction })
-    await Order.update(modifiedOrder, { where: { id: req.params.orderId }, transaction })
-    const updatedOrder = await Order.findByPk(modifiedOrder.orderId)
-    for (const product of updatedOrder.getProducts()) {
-      await updatedOrder.removeProduct(product)
-    }
+
+    order.shippingCosts = getShippingCosts(precio, restaurant)
+    order.price = precio + order.shippingCosts
+
+    order = await Order.update(order, { where: { id: req.params.orderId }, transaction })
+
     for (const product of req.body.products) {
       const dbProduct = await Product.findByPk(product.productId)
-      await updatedOrder.addProduct(dbProduct, { through: { quantity: product.quantity, unityPrice: dbProduct.price }, transaction })
+      await order.addProduct(dbProduct, { through: { quantity: product.quantity, unityPrice: dbProduct.price }, transaction })
     }
+
     await transaction.commit()
-    res.json(modifiedOrder)
+
+    res.json(await getOrder(order.id))
   } catch (err) {
     await transaction.rollback()
     res.status(500).send(err)

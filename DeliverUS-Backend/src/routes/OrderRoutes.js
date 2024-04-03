@@ -63,7 +63,8 @@ const loadFileRoutes = function (app) {
       hasRole('customer'),
       checkEntityExists(Order, 'orderId'),
       OrderMiddleware.checkOrderCustomer,
-      // OrderValidation.update,
+      OrderMiddleware.checkOrderIsPending,
+      OrderValidation.update,
       handleValidation,
       OrderController.update)
   // 4. Remove order (only customers can remove their own orders)
