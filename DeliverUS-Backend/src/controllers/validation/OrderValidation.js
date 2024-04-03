@@ -12,20 +12,8 @@ const checkRestaurantExists = async (value, { req }) => {
     const restaurant = await Restaurant.findByPk(req.body.restaurantId)
     if (!restaurant) {
       return Promise.reject(new Error('The restaurantId does not exist.'))
-    } else { return Promise.resolve() }
-  } catch (err) {
-    return Promise.reject(new Error(err))
-  }
-}
-
-const checkOrderIsPending = async (value, { req }) => {
-  try {
-    const order = await Order.findByPk(req.params.orderId)
-    const isPending = !order.startedAt
-    if (isPending) {
-      return Promise.resolve()
     } else {
-      return Promise.reject(new Error('The order has already been started'))
+      return Promise.resolve()
     }
   } catch (err) {
     return Promise.reject(new Error(err))
@@ -38,9 +26,9 @@ const checkProducts = async (value, { req }) => {
     if (!products || products.length === 0) {
       return Promise.reject(new Error('No products found in the order'))
     }
-    const restaurant = req.body.restaurantId
+    const restaurantId = req.body.restaurantId
     for (const product of products) {
-      if (!product.productId || product.restaurantId !== restaurant || product.availability !== 1) {
+      if (!product.productId || product.quantity <= 0 || product.restaurantId !== restaurantId || product.availability !== 1) {
         return Promise.reject(new Error('The order cannot be delivered'))
       }
     }
@@ -62,10 +50,47 @@ const create = [
 // 3. Check that products are available
 // 4. Check that all the products belong to the same restaurant of the originally saved order that is being edited.
 // 5. Check that the order is in the 'pending' state.
+
+const checkOrderIsPending = async (value, { req }) => {
+  try {
+    const order = await Order.findByPk(req.params.orderId)
+    // const isPending = !order.startedAt
+    // en teoria este cambio es innecesario, pero ya no se que probar :)
+    if (order.startedAt != null || order.sentAt != null || order.deliveredAt != null) {
+      return Promise.reject(new Error('The order has already been started'))
+    } else {
+      return Promise.resolve()
+    }
+  } catch (err) {
+    return Promise.reject(new Error(err))
+  }
+}
+
+const checkNewProducts = async (value, { req }) => {
+  try {
+    const products = req.body.products
+    if (!products || products.length === 0) {
+      return Promise.reject(new Error('No products found in the order'))
+    }
+    const oldOrder = await Order.findByPk(req.body.orderId)
+    const restaurantId = oldOrder.restaurantId
+    for (const product of products) {
+      if (!product.productId || product.quantity <= 0 || product.restaurantId !== restaurantId || product.availability !== 1) {
+        return Promise.reject(new Error('The order cannot be delivered'))
+      }
+    }
+    return Promise.resolve()
+  } catch (err) {
+    return Promise.reject(err)
+  }
+}
+
 const update = [
   check('restaurantId').not().exists(),
-  check('products').exists().isArray({ min: 1 }).custom(checkProducts),
-  check('orderId').exists().custom(checkOrderIsPending)
+  check('products').exists().isArray({ min: 1 }),
+  check('products').custom(checkNewProducts),
+  check('orderId').exists(),
+  check('orderId').custom(checkOrderIsPending)
 ]
 
 export { create, update }

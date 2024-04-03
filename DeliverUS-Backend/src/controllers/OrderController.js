@@ -163,6 +163,7 @@ const update = async function (req, res) {
   const transaction = await sequelizeSession.transaction()
   try {
     let modifiedOrder = req.body
+    // no hay restaurantId en el body, hay que corregir eso
     const restaurant = await Restaurant.findByPk(req.body.restaurantId)
     let precio = 0.0
     for (const product of req.body.products) {
