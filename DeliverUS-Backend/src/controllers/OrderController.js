@@ -129,8 +129,8 @@ const create = async (req, res) => {
     const restaurant = await Restaurant.findByPk(req.body.restaurantId)
     let precio = 0.0
     for (const product of req.body.products) {
-      const databaseProduct = await Product.findByPk(product.productId)
-      precio += product.quantity * databaseProduct.price
+      const dbProduct = await Product.findByPk(product.productId)
+      precio += product.quantity * dbProduct.price
     }
     if (precio > 10) {
       newOrder.shippingCosts = 0.0
@@ -141,8 +141,8 @@ const create = async (req, res) => {
     newOrder = await newOrder.save({ transaction })
 
     for (const product of req.body.products) {
-      const databaseProduct = await Product.findByPk(product.productId)
-      await newOrder.addProduct(databaseProduct, { through: { quantity: product.quantity, unityPrice: databaseProduct.price }, transaction })
+      const dbProduct = await Product.findByPk(product.productId)
+      await newOrder.addProduct(dbProduct, { through: { quantity: product.quantity, unityPrice: dbProduct.price }, transaction })
     }
     await transaction.commit()
     res.json(newOrder)
@@ -163,12 +163,12 @@ const update = async function (req, res) {
   const transaction = await sequelizeSession.transaction()
   try {
     let modifiedOrder = req.body
-    // no hay restaurantId en el body, hay que corregir eso
-    const restaurant = await Restaurant.findByPk(req.body.restaurantId)
+    const oldOrder = await Order.findByPk(req.params.orderId)
+    const restaurant = await Restaurant.findByPk(oldOrder.restaurantId)
     let precio = 0.0
     for (const product of req.body.products) {
-      const databaseProduct = await Product.findByPk(product.productId)
-      precio += product.quantity * databaseProduct.price
+      const dbProduct = await Product.findByPk(product.productId)
+      precio += product.quantity * dbProduct.price
     }
     if (precio > 10) {
       modifiedOrder.shippingCosts = 0.0
@@ -179,12 +179,12 @@ const update = async function (req, res) {
     modifiedOrder = await modifiedOrder.save({ transaction })
     await Order.update(modifiedOrder, { where: { id: req.params.orderId }, transaction })
     const updatedOrder = await Order.findByPk(modifiedOrder.orderId)
-    for (const product of updatedOrder.products) {
-      await product.destroy()
+    for (const product of updatedOrder.getProducts()) {
+      await updatedOrder.removeProduct(product)
     }
     for (const product of req.body.products) {
-      const databaseProduct = await Product.findByPk(product.productId)
-      await updatedOrder.addProduct(databaseProduct, { through: { quantity: product.quantity, unityPrice: databaseProduct.price }, transaction })
+      const dbProduct = await Product.findByPk(product.productId)
+      await updatedOrder.addProduct(dbProduct, { through: { quantity: product.quantity, unityPrice: dbProduct.price }, transaction })
     }
     await transaction.commit()
     res.json(modifiedOrder)

@@ -28,8 +28,10 @@ const checkProducts = async (value, { req }) => {
     }
     const restaurantId = req.body.restaurantId
     for (const product of products) {
-      if (!product.productId || product.quantity <= 0 || product.restaurantId !== restaurantId || product.availability !== 1) {
+      if (!product.productId || product.restaurantId !== restaurantId || product.availability !== 1) {
         return Promise.reject(new Error('The order cannot be delivered'))
+      } else if (product.quantity <= 0) {
+        return Promise.reject(new Error('Products must have positive quantity'))
       }
     }
     return Promise.resolve()
