@@ -180,18 +180,17 @@ const update = async function (req, res) {
   try {
     await Order.update(req.body, { where: { id: req.params.orderId }, transaction })
     let updatedOrder = await Order.findByPk(req.params.orderId, { transaction })
-    updatedOrder = await updatedOrder.save({ transaction })
 
     const restaurant = await Restaurant.findByPk(updatedOrder.restaurantId, { transaction })
 
     let precio = 0.0
     for (const product of req.body.products) {
-      const dbProduct = await Product.findByPk(product.productId)
+      const dbProduct = await Product.findByPk(product.productId, { transaction })
       precio += product.quantity * dbProduct.price
     }
+
     updatedOrder.shippingCosts = getShippingCosts(precio, restaurant)
-    precio += updatedOrder.shippingCosts
-    updatedOrder.price = precio
+    updatedOrder.price = precio + updatedOrder.shippingCosts
 
     const oldProducts = await updatedOrder.getProducts({ transaction })
     for (const oldProduct of oldProducts) {
@@ -200,9 +199,10 @@ const update = async function (req, res) {
 
     updatedOrder = await updatedOrder.save({ transaction })
     for (const product of req.body.products) {
-      const dbProduct = await Product.findByPk(product.productId)
+      const dbProduct = await Product.findByPk(product.productId, { transaction })
       await updatedOrder.addProduct(dbProduct, { through: { quantity: product.quantity, unityPrice: dbProduct.price }, transaction })
     }
+
     await transaction.commit()
 
     res.json(await getOrder(updatedOrder.id))
