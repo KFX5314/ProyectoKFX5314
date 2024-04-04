@@ -1,5 +1,5 @@
 import { check } from 'express-validator'
-import { Product } from '../../models/models.js'
+import { Product, Order } from '../../models/models.js'
 import { Op } from 'sequelize'
 
 const checkProductsAvailibity = async (value, { req }) => {
@@ -43,6 +43,20 @@ const create = [
   check('products').custom(checkProductsAvailibity)
 ]
 
+const checkOrderIsPending = async (value, { req }) => {
+  try {
+    const order = await Order.findByPk(req.params.orderId)
+
+    if (order.status !== 'pending') {
+      return Promise.reject(new Error('The order has already been started'))
+    }
+  } catch (err) {
+    return Promise.reject(new Error(err))
+  }
+
+  return Promise.resolve()
+}
+
 // DONE: Include validation rules for update that should:
 // 1. Check that restaurantId is NOT present in the body.
 // 2. Check that products is a non-empty array composed of objects with productId and quantity greater than 0
@@ -50,6 +64,7 @@ const create = [
 // TODO: 4. Check that all the products belong to the same restaurant of the originally saved order that is being edited.
 // 5. Check that the order is in the 'pending' state.
 const update = [
+  check('orderId').exists().custom(checkOrderIsPending),
   check('restaurantId').not().exists(),
   check('address').exists().isString().trim(),
   check('products').exists().isArray({ min: 1 }),
