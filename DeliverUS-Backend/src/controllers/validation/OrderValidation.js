@@ -2,7 +2,7 @@ import { check } from 'express-validator'
 import { Product, Order } from '../../models/models.js'
 import { Op } from 'sequelize'
 
-const checkProductsAvailibity = async (value, { req }) => {
+const checkProducts = async (value, { req }) => {
   try {
     const productIds = value.map(p => p.productId)
     const products = await Product.findAll({ where: { id: { [Op.in]: productIds } } })
@@ -40,7 +40,7 @@ const create = [
   check('products').exists().isArray({ min: 1 }),
   check('products.*.quantity').exists().isInt({ min: 1 }),
   check('products.*.productId').exists().isInt().toInt(),
-  check('products').custom(checkProductsAvailibity)
+  check('products').custom(checkProducts)
 ]
 
 const checkOrderIsPending = async (value, { req }) => {
@@ -70,7 +70,7 @@ const update = [
   check('products').exists().isArray({ min: 1 }),
   check('products.*.quantity').exists().isInt({ min: 1 }).toInt(),
   check('products.*.productId').exists().isInt().toInt(),
-  check('products').custom(checkProductsAvailibity)
+  check('products').custom(checkProducts)
 ]
 
 export { create, update }
