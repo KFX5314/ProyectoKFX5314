@@ -15,13 +15,13 @@ const checkOrderCustomer = async (req, res, next) => {
 
 // DONE: Implement the following function to check if the restaurant of the order exists
 const checkRestaurantExists = async (req, res, next) => {
-  const order = Order.build(req.body)
   try {
-    const restaurant = await Restaurant.findByPk(order.restaurantId)
+    const restaurant = await Restaurant.findByPk(req.body.restaurantId)
+
     if (restaurant) {
-      next()
+      return next()
     } else {
-      return res.status(409).send('Restaurant not found')
+      return res.status(409).send('Restaurant not found') // Not 404 because it's a validation error
     }
   } catch (err) {
     return res.status(500).send(err)
@@ -94,4 +94,5 @@ const checkOrderCanBeDelivered = async (req, res, next) => {
     return res.status(500).send(err.message)
   }
 }
+
 export { checkOrderOwnership, checkOrderCustomer, checkOrderVisible, checkOrderIsPending, checkOrderCanBeSent, checkOrderCanBeDelivered, checkRestaurantExists }

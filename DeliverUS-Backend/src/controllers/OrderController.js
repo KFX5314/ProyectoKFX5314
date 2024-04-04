@@ -178,17 +178,12 @@ const update = async function (req, res) {
   const transaction = await sequelizeSession.transaction()
 
   try {
-    // const oldOrder = await Order.findByPk(req.params.orderId)
-    // await oldOrder.update(req.body, { transaction })
-    // let updatedOrder = oldOrder.save({ transaction })
     await Order.update(req.body, { where: { id: req.params.orderId }, transaction })
     let updatedOrder = await Order.findByPk(req.params.orderId, { transaction })
     updatedOrder = await updatedOrder.save({ transaction })
-    // updatedOrder.restaurantId = oldOrder.restaurantId
-    // updatedOrder.createdAt = oldOrder.createdAt
-    // updatedOrder.userId = req.user.id
 
-    const restaurant = await Restaurant.findByPk(updatedOrder.restaurantId)
+    const restaurant = await Restaurant.findByPk(updatedOrder.restaurantId, { transaction })
+
     let precio = 0.0
     for (const product of req.body.products) {
       const dbProduct = await Product.findByPk(product.productId)
@@ -198,12 +193,11 @@ const update = async function (req, res) {
     precio += updatedOrder.shippingCosts
     updatedOrder.price = precio
 
-    // updatedOrder = await updatedOrder.save({ transaction })
-
     const oldProducts = await updatedOrder.getProducts({ transaction })
     for (const oldProduct of oldProducts) {
       await updatedOrder.removeProduct(oldProduct, { transaction })
     }
+
     updatedOrder = await updatedOrder.save({ transaction })
     for (const product of req.body.products) {
       const dbProduct = await Product.findByPk(product.productId)
