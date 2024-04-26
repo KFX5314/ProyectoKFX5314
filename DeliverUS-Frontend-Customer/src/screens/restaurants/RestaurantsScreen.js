@@ -1,53 +1,115 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect } from 'react'
-import { StyleSheet, View, Pressable } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { StyleSheet, FlatList } from 'react-native'
+// import { StyleSheet, FlatList, View, Pressable } from 'react-native'
+import ImageCard from '../../components/ImageCard'
+import restaurantLogo from '../../../assets/restaurantLogo.jpeg'
+import { getAll } from '../../api/RestaurantEndpoints'
 import TextSemiBold from '../../components/TextSemibold'
 import TextRegular from '../../components/TextRegular'
 import * as GlobalStyles from '../../styles/GlobalStyles'
+import { showMessage } from 'react-native-flash-message'
 
 export default function RestaurantsScreen ({ navigation, route }) {
   // TODO: Create a state for storing the restaurants
-
+  const [restaurants, setRestaurants] = useState([])
   useEffect(() => {
     // TODO: Fetch all restaurants and set them to state.
     //      Notice that it is not required to be logged in.
-
+    async function fetchRestaurants () {
+      try {
+        const fetchedRestaurants = await getAll()
+        setRestaurants(fetchedRestaurants)
+      } catch (error) {
+        showMessage({
+          message: `There was an error while retrieving restaurants. ${error}`,
+          type: 'error',
+          style: GlobalStyles.flashStyle,
+          titleStyle: GlobalStyles.flashTextStyle
+        })
+      }
+    }
     // TODO: set restaurants to state
+    fetchRestaurants()
   }, [route])
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.FRHeader}>
-        <TextSemiBold>FR1: Restaurants listing.</TextSemiBold>
-        <TextRegular>List restaurants and enable customers to navigate to restaurant details so they can create and place a new order</TextRegular>
-        <TextSemiBold>FR7: Show top 3 products.</TextSemiBold>
-        <TextRegular>Customers will be able to query top 3 products from all restaurants. Top products are the most popular ones, in other words the best sellers.</TextRegular>
-      </View>
-      <Pressable
+  const renderRestaurant = ({ item }) => {
+    return (
+      <ImageCard
+        imageUri={item.logo ? { uri: process.env.API_BASE_URL + '/' + item.logo } : restaurantLogo}
+        title={item.name}
         onPress={() => {
-          navigation.navigate('RestaurantDetailScreen', { id: 1 }) // TODO: Change this to the actual restaurant id as they are rendered as a FlatList
+          navigation.navigate('RestaurantDetailScreen', { id: item.id })
         }}
-        style={({ pressed }) => [
-          {
-            backgroundColor: pressed
-              ? GlobalStyles.brandPrimaryTap
-              : GlobalStyles.brandPrimary
-          },
-          styles.button
-        ]}
       >
-        <TextRegular textStyle={styles.text}>Go to Restaurant Detail Screen</TextRegular>
-      </Pressable>
-    </View>
+        <TextRegular numberOfLines={2}>{item.description}</TextRegular>
+        {item.averageServiceMinutes !== null &&
+          <TextSemiBold>Avg. service time: <TextSemiBold textStyle={{ color: GlobalStyles.brandPrimary }}>{item.averageServiceMinutes} min.</TextSemiBold></TextSemiBold>
+        }
+        <TextSemiBold>Shipping: <TextSemiBold textStyle={{ color: GlobalStyles.brandPrimary }}>{item.shippingCosts.toFixed(2)}€</TextSemiBold></TextSemiBold>
+      </ImageCard>
+    )
+  }
+  const renderEmptyRestaurantsList = () => {
+    return (
+      <TextRegular textStyle={styles.emptyList}>
+        No restaurants were retreived. Are you logged in?
+      </TextRegular>
+    )
+  }
+
+  return (
+    <>
+    <FlatList
+      style={styles.container}
+      data={restaurants}
+      renderItem={renderRestaurant}
+      ListEmptyComponent={renderEmptyRestaurantsList}
+    />
+    </>
   )
 }
-
 const styles = StyleSheet.create({
-  FRHeader: { // TODO: remove this style and the related <View>. Only for clarification purposes
-    justifyContent: 'center',
-    alignItems: 'left',
-    margin: 50
+  container: {
+    flex: 1
   },
+  button: {
+    borderRadius: 8,
+    height: 40,
+    marginTop: 12,
+    padding: 10,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    width: '80%'
+  },
+  actionButton: {
+    borderRadius: 8,
+    height: 40,
+    marginTop: 12,
+    margin: '1%',
+    padding: 10,
+    alignSelf: 'center',
+    flexDirection: 'column',
+    width: '50%'
+  },
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    bottom: 5,
+    position: 'absolute',
+    width: '90%'
+  },
+  text: {
+    fontSize: 16,
+    color: 'white',
+    alignSelf: 'center',
+    marginLeft: 5
+  },
+  emptyList: {
+    textAlign: 'center',
+    padding: 50
+  }
+})
+/* const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -70,4 +132,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 50
   }
-})
+}) */
