@@ -4,6 +4,9 @@ function getAll () {
   return get('/restaurants')
 }
 
+function getPopular () {
+  return get('products/popular')
+}
 function getDetail (id) {
   return get(`restaurants/${id}`)
 }
@@ -12,4 +15,4 @@ function getRestaurantCategories () {
   return get('restaurantCategories')
 }
 
-export { getAll, getDetail, getRestaurantCategories }
+export { getAll, getPopular, getDetail, getRestaurantCategories }

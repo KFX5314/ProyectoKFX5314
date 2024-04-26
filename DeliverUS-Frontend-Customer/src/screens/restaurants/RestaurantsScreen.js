@@ -4,8 +4,9 @@ import { StyleSheet, FlatList } from 'react-native'
 // import { StyleSheet, FlatList, View, Pressable } from 'react-native'
 import ImageCard from '../../components/ImageCard'
 import restaurantLogo from '../../../assets/restaurantLogo.jpeg'
-import { getAll } from '../../api/RestaurantEndpoints'
+import { getAll, getPopular } from '../../api/RestaurantEndpoints'
 import TextSemiBold from '../../components/TextSemibold'
+import defaultProductImage from '../../../assets/product.jpeg'
 import TextRegular from '../../components/TextRegular'
 import * as GlobalStyles from '../../styles/GlobalStyles'
 import { showMessage } from 'react-native-flash-message'
@@ -13,25 +14,41 @@ import { showMessage } from 'react-native-flash-message'
 export default function RestaurantsScreen ({ navigation, route }) {
   // TODO: Create a state for storing the restaurants
   const [restaurants, setRestaurants] = useState([])
+  const [topProducts, setTopProducts] = useState([])
   useEffect(() => {
     // TODO: Fetch all restaurants and set them to state.
     //      Notice that it is not required to be logged in.
-    async function fetchRestaurants () {
-      try {
-        const fetchedRestaurants = await getAll()
-        setRestaurants(fetchedRestaurants)
-      } catch (error) {
-        showMessage({
-          message: `There was an error while retrieving restaurants. ${error}`,
-          type: 'error',
-          style: GlobalStyles.flashStyle,
-          titleStyle: GlobalStyles.flashTextStyle
-        })
-      }
-    }
     // TODO: set restaurants to state
     fetchRestaurants()
+    fetchTop3Products()
   }, [route])
+
+  const fetchTop3Products = async () => {
+    try {
+      const fetchedProducts = await getPopular()
+      setTopProducts(fetchedProducts)
+    } catch (error) {
+      showMessage({
+        message: `There was an error while retrieving the top 3 products ${error}`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
+  const fetchRestaurants = async () => {
+    try {
+      const fetchedRestaurants = await getAll()
+      setRestaurants(fetchedRestaurants)
+    } catch (error) {
+      showMessage({
+        message: `There was an error while retrieving restaurants. ${error} `,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
 
   const renderRestaurant = ({ item }) => {
     return (
@@ -50,10 +67,39 @@ export default function RestaurantsScreen ({ navigation, route }) {
       </ImageCard>
     )
   }
+  const renderProduct = ({ item }) => {
+    return (
+      <ImageCard
+        imageUri={item.image ? { uri: process.env.API_BASE_URL + '/' + item.image } : defaultProductImage}
+        title={item.name}
+        onPress={() => {
+          navigation.navigate('RestaurantDetailScreen', { id: item.restaurantId })
+        }}
+      >
+        <TextRegular numberOfLines={2}>{item.description}</TextRegular>
+        <TextSemiBold textStyle={styles.price}>{item.price.toFixed(2)}€</TextSemiBold>
+        {!item.availability &&
+          <TextRegular textStyle={styles.availability }>Not available</TextRegular>
+        }
+      </ImageCard>
+    )
+  }
+  const renderHeader = () => {
+    return (
+    <>
+    <FlatList
+      horizontal = {true}
+      style = {styles.text}
+      data={topProducts}
+      renderItem={renderProduct}
+    />
+    </>
+    )
+  }
   const renderEmptyRestaurantsList = () => {
     return (
       <TextRegular textStyle={styles.emptyList}>
-        No restaurants were retreived. Are you logged in?
+        Something went wrong :p
       </TextRegular>
     )
   }
@@ -64,6 +110,7 @@ export default function RestaurantsScreen ({ navigation, route }) {
       style={styles.container}
       data={restaurants}
       renderItem={renderRestaurant}
+      ListHeaderComponent={renderHeader}
       ListEmptyComponent={renderEmptyRestaurantsList}
     />
     </>
