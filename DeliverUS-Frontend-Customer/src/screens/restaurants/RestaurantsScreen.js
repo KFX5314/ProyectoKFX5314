@@ -72,6 +72,17 @@ export default function RestaurantsScreen ({ navigation, route }) {
       <ImageCard
         imageUri={item.image ? { uri: process.env.API_BASE_URL + '/' + item.image } : defaultProductImage}
         title={item.name}
+        cardStyle={{
+          marginTop: 20,
+          marginHorizontal: '1%',
+          height: 127,
+          width: 270,
+          padding: 2,
+          alignItems: 'flex-start',
+          flexDirection: 'row',
+          backgroundColor: 'white',
+          borderRadius: 15
+        }}
         onPress={() => {
           navigation.navigate('RestaurantDetailScreen', { id: item.restaurantId })
         }}
@@ -87,6 +98,7 @@ export default function RestaurantsScreen ({ navigation, route }) {
   const renderHeader = () => {
     return (
     <>
+    <TextRegular numberOfLines={2}>{'Most popular products'}</TextRegular>
     <FlatList
       horizontal = {true}
       style = {styles.text}
