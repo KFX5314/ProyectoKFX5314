@@ -97,11 +97,11 @@ export default function RestaurantsScreen ({ navigation, route }) {
   }
   const renderHeader = () => {
     return (
-    <View style = {styles.container}>
+    <View style = {styles.popularProductsContainer}>
       <TextRegular style={styles.headerText}> Most popular products </TextRegular>
       <FlatList
         horizontal = {true}
-        style = {styles.popularProductsContainer}
+        style = {styles.popularProducts}
         data={topProducts}
         renderItem={renderProduct}
       />
@@ -118,13 +118,13 @@ export default function RestaurantsScreen ({ navigation, route }) {
 
   return (
     <>
-    <FlatList
-      style={styles.container}
-      data={restaurants}
-      renderItem={renderRestaurant}
-      ListHeaderComponent={renderHeader}
-      ListEmptyComponent={renderEmptyRestaurantsList}
-    />
+      <FlatList
+        style={styles.container}
+        data={restaurants}
+        renderItem={renderRestaurant}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmptyRestaurantsList}
+      />
     </>
   )
 }
@@ -138,6 +138,12 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  popularProducts: {
+    flex: 1,
+    padding: 10,
+    margin: 10, 
+    alignSelf: 'center'
   },
   button: {
     borderRadius: 8,
@@ -178,7 +184,7 @@ const styles = StyleSheet.create({
   {
     flex: 1,
     padding: 10,
-    marginBottom: 10, 
+    margin: 10, 
     borderRadius: 10,
     borderWidth: 5,
     borderColor: GlobalStyles.brandPrimary,
