@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     marginBottom: 10, 
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: GlobalStyles.brandSeparator,
+    borderColor: GlobalStyles.brandSeparator
   },
   orderListContainer: {
     flexGrow: 1,

@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, FlatList } from 'react-native'
+import { StyleSheet, FlatList , View} from 'react-native'
 // import { StyleSheet, FlatList, View, Pressable } from 'react-native'
 import ImageCard from '../../components/ImageCard'
 import restaurantLogo from '../../../assets/restaurantLogo.jpeg'
@@ -10,6 +10,7 @@ import defaultProductImage from '../../../assets/product.jpeg'
 import TextRegular from '../../components/TextRegular'
 import * as GlobalStyles from '../../styles/GlobalStyles'
 import { showMessage } from 'react-native-flash-message'
+
 
 export default function RestaurantsScreen ({ navigation, route }) {
   // TODO: Create a state for storing the restaurants
@@ -78,7 +79,6 @@ export default function RestaurantsScreen ({ navigation, route }) {
           height: 127,
           width: 270,
           padding: 2,
-          alignItems: 'flex-start',
           flexDirection: 'row',
           backgroundColor: 'white',
           borderRadius: 15
@@ -97,15 +97,15 @@ export default function RestaurantsScreen ({ navigation, route }) {
   }
   const renderHeader = () => {
     return (
-    <>
-    <TextRegular style={styles.headerText}> Most popular products </TextRegular>
-    <FlatList
-      horizontal = {true}
-      style = {styles.text}
-      data={topProducts}
-      renderItem={renderProduct}
-    />
-    </>
+    <View style = {styles.container}>
+      <TextRegular style={styles.headerText}> Most popular products </TextRegular>
+      <FlatList
+        horizontal = {true}
+        style = {styles.popularProductsContainer}
+        data={topProducts}
+        renderItem={renderProduct}
+      />
+    </View>
     )
   }
   const renderEmptyRestaurantsList = () => {
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     marginVertical: 10 
   },
   container: {
-    flex: 1
+    flex: 1,
   },
   button: {
     borderRadius: 8,
@@ -170,17 +170,19 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginLeft: 5
   },
-  ordersContainer: {
+  emptyList: {
+    textAlign: 'center',
+    padding: 50
+  },
+  popularProductsContainer: 
+  {
     flex: 1,
     padding: 10,
     marginBottom: 10, 
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: GlobalStyles.brandSeparator,
-  },
-  emptyList: {
-    textAlign: 'center',
-    padding: 50
+    borderWidth: 5,
+    borderColor: GlobalStyles.brandPrimary,
+    alignSelf: 'center'
   }
 })
 /* const styles = StyleSheet.create({
