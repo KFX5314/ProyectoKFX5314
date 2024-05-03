@@ -194,7 +194,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: GlobalStyles.brandSeparator,
-    flex: 1,
   },
   orderListContainer: {
     flexGrow: 1,

@@ -170,6 +170,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginLeft: 5
   },
+  ordersContainer: {
+    flex: 1,
+    padding: 10,
+    marginBottom: 10, 
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: GlobalStyles.brandSeparator,
+  },
   emptyList: {
     textAlign: 'center',
     padding: 50
