@@ -7,17 +7,13 @@ import { brandPrimary, brandPrimaryTap } from '../../styles/GlobalStyles'
 
 import { AuthorizationContext } from '../../context/AuthorizationContext'
 import { getAll } from '../../api/OrderEndpoints'
-import { showMessage } from 'react-native-flash-message';
+import { showMessage } from 'react-native-flash-message'
 import * as GlobalStyles from '../../styles/GlobalStyles'
 import ImageCard from '../../components/ImageCard'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 
-
-
-
-
 export default function OrdersScreen ({ navigation, route }) {
-  //done
+  // done
   const [orders, setOrders] = useState([])
   const { loggedInUser } = useContext(AuthorizationContext)
 
@@ -26,7 +22,7 @@ export default function OrdersScreen ({ navigation, route }) {
       const fetchedOrders = await getAll()
       setOrders(fetchedOrders)
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      console.error('Error fetching orders:', error)
       showMessage({
         message: `There was an error while retrieving orders. ${error} `,
         type: 'error',
@@ -35,8 +31,8 @@ export default function OrdersScreen ({ navigation, route }) {
       })
     }
   }
-  //done
-  
+  // done
+
   useEffect(() => {
     if (loggedInUser) {
       fetchOrders()
@@ -44,8 +40,8 @@ export default function OrdersScreen ({ navigation, route }) {
       setOrders(null)
     }
   }, [loggedInUser, route])
-  //done
-  
+  // done
+
   return (
     <View style={styles.container}>
       <View style={styles.FRHeader}>
@@ -63,7 +59,8 @@ export default function OrdersScreen ({ navigation, route }) {
 
       {/* Lista de pedidos */}
       <View style={styles.ordersContainer}>
-        { orders!= null && orders.length > 0 ? (
+        { orders != null && orders.length > 0
+          ? (
           <FlatList
             data={orders}
             renderItem={renderOrder}
@@ -71,31 +68,31 @@ export default function OrdersScreen ({ navigation, route }) {
             contentContainerStyle={styles.orderListContainer}
             horizontal={false}
           />
-        ) : (
+            )
+          : (
           <TextRegular>No orders available.</TextRegular>
-        )}
+            )}
       </View>
-
 
       <Pressable
         onPress={() => {
-          navigation.navigate('OrderDetailScreen', { id: Math.floor(Math.random() * 100) });
+          navigation.navigate('OrderDetailScreen', { id: Math.floor(Math.random() * 100) })
         }}
         style={({ pressed }) => [
           {
-            backgroundColor: pressed ? brandPrimaryTap : brandPrimary,
+            backgroundColor: pressed ? brandPrimaryTap : brandPrimary
           },
-          styles.button,
+          styles.button
         ]}
       >
         <TextRegular textStyle={styles.text}>Go to Order Detail Screen</TextRegular>
       </Pressable>
     </View>
-  );
+  )
 }
 const renderOrder = ({ item }) => {
   return (
-    //Imagen de restaurante
+    // Imagen de restaurante
     <ImageCard
       imageUri={item.restaurant.logo ? { uri: process.env.API_BASE_URL + '/' + item.restaurant.logo } : restaurantLogo}
       title={item.restaurant.name}
@@ -104,11 +101,14 @@ const renderOrder = ({ item }) => {
       }}
     >
       {/* Estatus de pedido */}
-      <TextRegular>Status: 
-        <TextSemiBold textStyle={item.status === 'in process' ? { color: GlobalStyles.brandSecondary } 
-        : item.status === 'sent' ? { color: GlobalStyles.brandGreen } 
-        : item.status === 'delivered' ? { color: GlobalStyles.brandBlue } 
-        : { color: GlobalStyles.brandPrimary }}>
+      <TextRegular>Status:
+        <TextSemiBold textStyle={item.status === 'in process'
+          ? { color: GlobalStyles.brandSecondary }
+          : item.status === 'sent'
+            ? { color: GlobalStyles.brandGreen }
+            : item.status === 'delivered'
+              ? { color: GlobalStyles.brandBlue }
+              : { color: GlobalStyles.brandPrimary }}>
           {item.status}
         </TextSemiBold>
       </TextRegular>
@@ -117,10 +117,10 @@ const renderOrder = ({ item }) => {
       <TextRegular>Price: <TextSemiBold>{item.price}€</TextSemiBold></TextRegular>
 
       {/* Modificaciones del pedido */}
-      {item.status === 'pending' &&//Renderizado condicional
+      {item.status === 'pending' &&// Renderizado condicional
       <View style={styles.actionButtonsContainer}>
         <Pressable
-         onPress={() => showMessage("TO DO") /* navigation.navigate('EditOrderScreen', { orderId: item.id, id: item.restaurant.id })*/}//TODO
+         onPress={() => showMessage('TO DO') /* navigation.navigate('EditOrderScreen', { orderId: item.id, id: item.restaurant.id }) */}// TODO
           style={({ pressed }) => [
             {
               backgroundColor: pressed
@@ -138,7 +138,7 @@ const renderOrder = ({ item }) => {
         </Pressable>
 
         <Pressable
-          onPress={() => { showMessage("TO DO") /*setOrderToBeDeleted(item)*/ }}//TODO
+          onPress={() => { showMessage('TO DO') /* setOrderToBeDeleted(item) */ }}// TODO
           style={({ pressed }) => [
             {
               backgroundColor: pressed
@@ -168,16 +168,15 @@ const styles = StyleSheet.create({
   ordersContainer: {
     flex: 1,
     padding: 10,
-    marginBottom: 10, 
+    marginBottom: 10,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: GlobalStyles.brandSeparator,
-    flex: 1,
+    borderColor: GlobalStyles.brandSeparator
   },
   orderListContainer: {
     flexGrow: 1,
     flexDirection: 'column',
-    alignItems: 'stretch', 
+    alignItems: 'stretch'
   },
   container: {
     flex: 1,
