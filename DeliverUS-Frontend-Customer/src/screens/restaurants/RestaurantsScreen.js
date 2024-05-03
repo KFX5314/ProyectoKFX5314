@@ -98,7 +98,7 @@ export default function RestaurantsScreen ({ navigation, route }) {
   const renderHeader = () => {
     return (
     <>
-    <TextRegular numberOfLines={2}>{'Most popular products'}</TextRegular>
+    <TextRegular style={styles.headerText}> Most popular products </TextRegular>
     <FlatList
       horizontal = {true}
       style = {styles.text}
@@ -129,6 +129,13 @@ export default function RestaurantsScreen ({ navigation, route }) {
   )
 }
 const styles = StyleSheet.create({
+  headerText:
+  {
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    textAlign: 'center', 
+    marginVertical: 10 
+  },
   container: {
     flex: 1
   },

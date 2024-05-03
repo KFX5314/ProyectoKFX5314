@@ -60,17 +60,23 @@ export default function OrdersScreen ({ navigation, route }) {
           'sent' or 'delivered' no edition is allowed.
         </TextRegular>
       </View>
+
+      {/* Lista de pedidos */}
       <View style={styles.ordersContainer}>
         { orders!= null && orders.length > 0 ? (
           <FlatList
             data={orders}
             renderItem={renderOrder}
             keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.orderListContainer}
+            horizontal={false}
           />
         ) : (
           <TextRegular>No orders available.</TextRegular>
         )}
       </View>
+
+
       <Pressable
         onPress={() => {
           navigation.navigate('OrderDetailScreen', { id: Math.floor(Math.random() * 100) });
@@ -111,7 +117,7 @@ const renderOrder = ({ item }) => {
       <TextRegular>Price: <TextSemiBold>{item.price}€</TextSemiBold></TextRegular>
 
       {/* Modificaciones del pedido */}
-      {item.status === 'pending' &&
+      {item.status === 'pending' &&//Renderizado condicional
       <View style={styles.actionButtonsContainer}>
         <Pressable
          onPress={() => showMessage("TO DO") /* navigation.navigate('EditOrderScreen', { orderId: item.id, id: item.restaurant.id })*/}//TODO
@@ -158,6 +164,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'left',
     margin: 50
+  },
+  ordersContainer: {
+    flex: 1,
+    padding: 10,
+    marginBottom: 10, 
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: GlobalStyles.brandSeparator,
+    flex: 1,
+  },
+  orderListContainer: {
+    flexGrow: 1,
+    flexDirection: 'column',
+    alignItems: 'stretch', 
   },
   container: {
     flex: 1,
