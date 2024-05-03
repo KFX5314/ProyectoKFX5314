@@ -121,7 +121,7 @@ export default function OrdersScreen ({ navigation, route }) {
       <View style={styles.FRHeader}>
         <TextSemiBold>FR5: Listing my confirmed orders</TextSemiBold>
         <TextRegular>
-          A Customer will be able to check his/her confirmed orders, sorted from the most recent to the oldest.
+          A Customer will be able to check his/her confirmed orders, sorted from the most recent to the oldest. ESTO TA DONE AMIGO ඞ
         </TextRegular>
         <TextSemiBold>FR8: Edit/delete order</TextSemiBold>
         <TextRegular>
