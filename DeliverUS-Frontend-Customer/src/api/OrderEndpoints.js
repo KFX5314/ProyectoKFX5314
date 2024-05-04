@@ -4,11 +4,10 @@ function getAll () {
     return get('orders')
   }
 
-  function getDetail (id) {
+  function getOrderDetail (id) {
     return get(`orders/${id}`)
   }
 
-  //
   function create (data) {
     return post('orders/', data)
   }
@@ -21,4 +20,4 @@ function getAll () {
     return destroy(`orders/${id}`)
   }
 
-export { getAll, getDetail, create, update, remove }
+export { getAll, getOrderDetail, create, update, remove }
