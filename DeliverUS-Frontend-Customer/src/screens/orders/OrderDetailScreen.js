@@ -10,6 +10,8 @@ import * as GlobalStyles from '../../styles/GlobalStyles'
 import { getOrderDetail } from '../../api/OrderEndpoints'
 import defaultProductImage from '../../../assets/product.jpeg'
 import { AuthorizationContext } from '../../context/AuthorizationContext'
+import restaurantLogo from '../../../assets/restaurantLogo.jpeg'
+
 
 
 export default function OrderDetailScreen ({ navigation, route }) {
@@ -50,6 +52,7 @@ export default function OrderDetailScreen ({ navigation, route }) {
 
   return (
     <View style={styles.container}>
+      <ImageBackground style={styles.imageBackground} source={(order.restaurant?.logo) ? { uri: process.env.API_BASE_URL + '/' + order.restaurant.logo, cache: 'force-cache' } : undefined}></ImageBackground>
       {order != null && Array.isArray(order.products) && order.products.length > 0 ? (
         <FlatList
           data={order.products}
@@ -73,6 +76,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'left',
     margin: 50
+  },  
+  imageBackground: {//NO SE VE NADAAAAAAAAAAAAA
+    flex: 1,
+    height: '100%', 
+    resizeMode: 'cover', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', 
   },
   container: {
     flex: 1,

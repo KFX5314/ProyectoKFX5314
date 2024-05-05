@@ -11,6 +11,8 @@ import { showMessage } from 'react-native-flash-message';
 import * as GlobalStyles from '../../styles/GlobalStyles'
 import ImageCard from '../../components/ImageCard'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
+import restaurantLogo from '../../../assets/restaurantLogo.jpeg'
+
 
 
 
