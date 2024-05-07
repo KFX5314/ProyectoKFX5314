@@ -143,7 +143,8 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     margin: 10, 
-    alignSelf: 'center'
+    alignSelf: 'center',
+    showHorizontalScrollIndicator: true,
   },
   button: {
     borderRadius: 8,

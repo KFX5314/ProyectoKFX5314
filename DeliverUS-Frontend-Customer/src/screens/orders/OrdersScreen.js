@@ -37,7 +37,6 @@ export default function OrdersScreen ({ navigation, route }) {
       })
     }
   }
-  //done
   
   useEffect(() => {
     if (loggedInUser) {
@@ -46,7 +45,6 @@ export default function OrdersScreen ({ navigation, route }) {
       setOrders(null)
     }
   }, [loggedInUser, route])
-  //done
     
   const renderOrder = ({ item }) => {
     return (
@@ -179,15 +177,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
 
   },
-  actionButton: 
-  {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    margin: 10,
-    alignItems: 'center',
+  actionButton: {
     borderRadius: 8,
-
+    height: 40,
+    marginTop: 12,
+    margin: '0.5%',
+    padding: 10,
+    alignSelf: 'center',
+    flexDirection: 'column',
+    width: '50%'
   },
   ordersContainer: {
     flex: 1,
