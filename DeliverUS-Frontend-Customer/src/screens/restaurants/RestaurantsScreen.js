@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, FlatList , View} from 'react-native'
-// import { StyleSheet, FlatList, View, Pressable } from 'react-native'
+import { StyleSheet, FlatList } from 'react-native'
 import ImageCard from '../../components/ImageCard'
 import restaurantLogo from '../../../assets/restaurantLogo.jpeg'
 import { getAll, getPopular } from '../../api/RestaurantEndpoints'
@@ -10,7 +9,6 @@ import defaultProductImage from '../../../assets/product.jpeg'
 import TextRegular from '../../components/TextRegular'
 import * as GlobalStyles from '../../styles/GlobalStyles'
 import { showMessage } from 'react-native-flash-message'
-
 
 export default function RestaurantsScreen ({ navigation, route }) {
   // TODO: Create a state for storing the restaurants
@@ -74,14 +72,10 @@ export default function RestaurantsScreen ({ navigation, route }) {
         imageUri={item.image ? { uri: process.env.API_BASE_URL + '/' + item.image } : defaultProductImage}
         title={item.name}
         cardStyle={{
-          marginTop: 20,
-          marginHorizontal: '1%',
-          height: 127,
-          width: 270,
-          padding: 2,
           flexDirection: 'row',
           backgroundColor: 'white',
-          borderRadius: 15
+          borderRadius: 15,
+          minWidth: 300
         }}
         onPress={() => {
           navigation.navigate('RestaurantDetailScreen', { id: item.restaurantId })
@@ -95,19 +89,22 @@ export default function RestaurantsScreen ({ navigation, route }) {
       </ImageCard>
     )
   }
+
   const renderHeader = () => {
     return (
-    <View style = {styles.popularProductsContainer}>
-      <TextRegular style={styles.headerText}> Most popular products </TextRegular>
-      <FlatList
-        horizontal = {true}
-        style = {styles.popularProducts}
-        data={topProducts}
-        renderItem={renderProduct}
-      />
-    </View>
+      <>
+        <TextRegular style={styles.headerText}>Most popular products</TextRegular>
+        <FlatList
+          horizontal={true}
+          style={styles.popularProducts}
+          data={topProducts}
+          renderItem={renderProduct}
+        />
+        <TextRegular style={styles.headerText}>Restaurants</TextRegular>
+      </>
     )
   }
+
   const renderEmptyRestaurantsList = () => {
     return (
       <TextRegular textStyle={styles.emptyList}>
@@ -129,22 +126,19 @@ export default function RestaurantsScreen ({ navigation, route }) {
   )
 }
 const styles = StyleSheet.create({
-  headerText:
-  {
-    fontSize: 20, 
-    fontWeight: 'bold', 
-    textAlign: 'center', 
-    marginVertical: 10 
+  headerText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    margin: 10
   },
   container: {
-    flex: 1,
+    flex: 1
   },
   popularProducts: {
     flex: 1,
-    padding: 10,
-    margin: 10, 
+    padding: 4,
     alignSelf: 'center',
-    showHorizontalScrollIndicator: true,
+    maxWidth: '100%'
   },
   button: {
     borderRadius: 8,
@@ -181,38 +175,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 50
   },
-  popularProductsContainer: 
-  {
+  popularProductsContainer: {
     flex: 1,
-    padding: 10,
-    margin: 10, 
     borderRadius: 10,
     borderWidth: 5,
     borderColor: GlobalStyles.brandPrimary,
     alignSelf: 'center'
   }
 })
-/* const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    margin: 50
-  },
-  button: {
-    borderRadius: 8,
-    height: 40,
-    margin: 12,
-    padding: 10,
-    width: '100%'
-  },
-  text: {
-    fontSize: 16,
-    color: 'white',
-    textAlign: 'center'
-  },
-  emptyList: {
-    textAlign: 'center',
-    padding: 50
-  }
-}) */
