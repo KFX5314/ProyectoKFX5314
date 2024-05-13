@@ -75,7 +75,9 @@ export default function OrdersScreen ({ navigation, route }) {
         {item.status === 'pending' &&// Renderizado condicional
         <View style={styles.actionButtonsContainer}>
           <Pressable
-           onPress={() => showMessage('TO DO') /* navigation.navigate('EditOrderScreen', { orderId: item.id, id: item.restaurant.id }) */}// TODO
+           onPress={() => {
+             navigation.navigate('OrderDetailScreen', { id: item.id })
+           }}
             style={({ pressed }) => [
               {
                 backgroundColor: pressed
@@ -123,9 +125,9 @@ export default function OrdersScreen ({ navigation, route }) {
         </TextRegular>
         <TextSemiBold>FR8: Edit/delete order</TextSemiBold>
         <TextRegular>
-          If the order is in the state 'pending', the customer can edit or remove the products included or remove the
-          whole order. The delivery address can also be modified in the state 'pending'. If the order is in the state
-          'sent' or 'delivered' no edition is allowed.
+          If the order is in the state pending, the customer can edit or remove the products included or remove the
+          whole order. The delivery address can also be modified in the state pending. If the order is in the state
+          sent or delivered no edition is allowed.
         </TextRegular>
       </View>
 
@@ -169,8 +171,7 @@ const styles = StyleSheet.create({
     alignItems: 'left',
     margin: 50
   },
-  actionButtonsContainer:
-  {
+  actionButtonsContainer: {
     flex: 1,
     justifyContent: 'center',
     flexDirection: 'row'
