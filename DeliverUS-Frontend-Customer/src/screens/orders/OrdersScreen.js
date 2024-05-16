@@ -35,6 +35,29 @@ export default function OrdersScreen ({ navigation, route }) {
     }
   }
 
+  const removeOrder = async (order) => {
+    try {
+      //await remove(order.id) //TODO DESCOMENTAR ESTA PARTE DEL CÓDIGO, ES SOLO PA NO TENER QUE REPOBLAR LA BASE DE DATOS CADA VEZ QUE TESTEO ESTO.
+      await fetchOrders()
+      setOrderToBeDeleted(null)
+      showMessage({
+        message: `Order from ${new Date(order.createdAt).toLocaleString().replace(',', ' ')} succesfully removed`,
+        type: 'success',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    } catch (error) {
+      console.log(error)
+      setOrderToBeDeleted(null)
+      showMessage({
+        message: `Order from ${new Date(order.createdAt).toLocaleString().replace(',', ' ')} could not be removed.`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
+
   useEffect(() => {
     if (loggedInUser) {
       fetchOrders()
@@ -78,7 +101,7 @@ export default function OrdersScreen ({ navigation, route }) {
         <View style={styles.actionButtonsContainer}>
           <Pressable
            onPress={() => {
-             navigation.navigate('OrderDetailScreen', { id: item.id })
+            navigation.navigate('EditOrderScreen', { orderId: item.id, id: item.restaurant.id })
            }}
             style={({ pressed }) => [
               {
@@ -96,6 +119,7 @@ export default function OrdersScreen ({ navigation, route }) {
             </View>
           </Pressable>
 
+          {/* Boton de borrar */}
           <Pressable
             onPress={() => { setOrderToBeDeleted(item) }}// DONE
             style={({ pressed }) => [
@@ -117,29 +141,6 @@ export default function OrdersScreen ({ navigation, route }) {
 
       </ImageCard>
     )
-  }
-
-  const removeOrder = async (order) => {
-    try {
-      await remove(order.id)
-      await fetchOrders()
-      setOrderToBeDeleted(null)
-      showMessage({
-        message: `Order ${order.name} succesfully removed`,
-        type: 'success',
-        style: GlobalStyles.flashStyle,
-        titleStyle: GlobalStyles.flashTextStyle
-      })
-    } catch (error) {
-      console.log(error)
-      setOrderToBeDeleted(null)
-      showMessage({
-        message: `Order ${order.name} could not be removed.`,
-        type: 'error',
-        style: GlobalStyles.flashStyle,
-        titleStyle: GlobalStyles.flashTextStyle
-      })
-    }
   }
 
   return (
@@ -187,7 +188,7 @@ export default function OrdersScreen ({ navigation, route }) {
       >
         <TextRegular textStyle={styles.text}>Go to Order Detail Screen</TextRegular>
       </Pressable>
-      
+
       {/* Mensaje de confirmación */}
       <DeleteModal
           isVisible={ordersToBeDeleted !== null}
@@ -207,21 +208,21 @@ const styles = StyleSheet.create({
     alignItems: 'left',
     margin: 50
   },
-  actionButtonsContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row'
-
-  },
   actionButton: {
     borderRadius: 8,
     height: 40,
     marginTop: 12,
-    margin: '0.5%',
+    margin: '1%',
     padding: 10,
     alignSelf: 'center',
     flexDirection: 'column',
     width: '50%'
+  },
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    bottom: 0,
+    position: 'absolute',
+    width: '90%'
   },
   ordersContainer: {
     flex: 1,
@@ -245,14 +246,16 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 8,
     height: 40,
-    margin: 12,
+    marginTop: 12,
     padding: 10,
-    width: '100%'
+    alignSelf: 'center',
+    flexDirection: 'row',
+    width: '80%'
   },
   text: {
     fontSize: 16,
     color: 'white',
-    paddingLeft: 10,
-    textAlign: 'center'
-  }
+    alignSelf: 'center',
+    marginLeft: 5
+  },
 })
