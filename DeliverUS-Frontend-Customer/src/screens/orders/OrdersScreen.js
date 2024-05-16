@@ -103,7 +103,7 @@ export default function OrdersScreen ({ navigation, route }) {
         <View style={styles.actionButtonsContainer}>
           <Pressable
            onPress={() => {
-             navigation.navigate('OrderDetailScreen', { id: item.id })
+            navigation.navigate('EditOrderScreen', { orderId: item.id, id: item.restaurant.id })
            }}
             style={({ pressed }) => [
               {
