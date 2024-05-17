@@ -33,6 +33,57 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
       </View>
     )
   }
+
+  const renderFooter = () => {
+    return (
+      <View>
+        {order.some(product => product[0] > 0) &&
+          <View style={styles.actionButtonsContainer}>
+          <Pressable
+            onPress={() => {
+              navigation.navigate('ConfirmOrderScreen', {
+                order, id: route.params.id
+              })
+            }}
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandBlueTap
+                  : GlobalStyles.brandGreen
+              },
+              styles.actionButton
+            ]}>
+            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+              <TextRegular textStyle={styles.text}>
+                Create order
+              </TextRegular>
+            </View>
+          </Pressable>
+          <Pressable
+            onPress={() => { cancelOrder() }}
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandPrimaryTap
+                  : GlobalStyles.brandPrimary
+              },
+              styles.actionButton
+            ]}>
+            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+              <TextRegular textStyle={styles.text}>
+                Cancel order
+              </TextRegular>
+            </View>
+          </Pressable>
+        </View>}
+      </View>
+    )
+  }
+
+  function cancelOrder () {
+    const auxOrder = [...order].map(x => [0, 0])
+    setOrder(auxOrder)
+  }
   function updateOrder ({ index, item, quantity = null }) {
     const auxOrder = [...order]
     if (quantity === null) {
@@ -58,7 +109,13 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
         {!item.availability &&
           <TextRegular textStyle={styles.availability }>Not available</TextRegular>
         }
-        {order[index][0] === 0 &&
+        {order[index][0] > 0 &&
+        <View style={styles.orderInfoContainer}>
+          <TextSemiBold>{order[index][0]} items</TextSemiBold>
+          <TextSemiBold>Total price: {order[index][1]}</TextSemiBold>
+        </View>
+        }
+        {order[index][0] === 0 && item.availability &&
           <View style={styles.actionButtonsContainer}>
           <TextInput
             style={styles.input}
@@ -159,6 +216,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
   return (
       <FlatList
           ListHeaderComponent={renderHeader}
+          ListFooterComponent={renderFooter}
           ListEmptyComponent={renderEmptyProductsList}
           style={styles.container}
           data={restaurant.products}
@@ -192,6 +250,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 12,
     paddingHorizontal: 10
+  },
+  orderInfoContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    alignItems: 'flex-end'
   },
   row: {
     padding: 15,
