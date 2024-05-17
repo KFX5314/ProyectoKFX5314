@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, View, FlatList, ImageBackground, Image } from 'react-native'
+import { StyleSheet, View, FlatList, ImageBackground, Image, Pressable, TextInput } from 'react-native'
 import { showMessage } from 'react-native-flash-message'
 import { getDetail } from '../../api/RestaurantEndpoints'
 import ImageCard from '../../components/ImageCard'
@@ -8,9 +8,12 @@ import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemibold'
 import * as GlobalStyles from '../../styles/GlobalStyles'
 import defaultProductImage from '../../../assets/product.jpeg'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 export default function RestaurantDetailScreen ({ navigation, route }) {
   const [restaurant, setRestaurant] = useState({})
+  const [order, setOrder] = useState([])
+  const [quantities, setQuantities] = useState([])
 
   useEffect(() => {
     fetchRestaurantDetail()
@@ -19,14 +22,6 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
   const renderHeader = () => {
     return (
       <View>
-        <View style={styles.FRHeader}>
-          <TextSemiBold>FR2: Restaurants details and menu.</TextSemiBold>
-          <TextRegular>Customers will be able to query restaurants details and the products offered by them.</TextRegular>
-          <TextSemiBold>FR3: Add, edit and remove products to a new order.</TextSemiBold>
-          <TextRegular>A customer can add several products, and several units of a product to a new order. Before confirming, customer can edit and remove products. Once the order is confirmed, it cannot be edited or removed.</TextRegular>
-          <TextSemiBold>FR4: Confirm or dismiss new order.</TextSemiBold>
-          <TextRegular>Customers will be able to confirm or dismiss the order before sending it to the backend.</TextRegular>
-        </View>
         <ImageBackground source={(restaurant?.heroImage) ? { uri: process.env.API_BASE_URL + '/' + restaurant.heroImage, cache: 'force-cache' } : undefined} style={styles.imageBackground}>
           <View style={styles.restaurantHeaderContainer}>
             <TextSemiBold textStyle={styles.textTitle}>{restaurant.name}</TextSemiBold>
@@ -38,8 +33,21 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
       </View>
     )
   }
-
-  const renderProduct = ({ item }) => {
+  function updateOrder ({ index, item, quantity = null }) {
+    const auxOrder = [...order]
+    if (quantity === null) {
+      quantity = quantities[index]
+    }
+    auxOrder[index][0] = quantity
+    auxOrder[index][1] = item.price * quantity
+    setOrder(auxOrder)
+  }
+  function updateQuantities ({ index, quantity }) {
+    const auxQuantities = [...quantities]
+    auxQuantities[index] = parseInt(quantity)
+    setQuantities(auxQuantities)
+  }
+  const renderProduct = ({ index, item }) => {
     return (
       <ImageCard
         imageUri={item.image ? { uri: process.env.API_BASE_URL + '/' + item.image } : defaultProductImage}
@@ -50,6 +58,74 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
         {!item.availability &&
           <TextRegular textStyle={styles.availability }>Not available</TextRegular>
         }
+        {order[index][0] === 0 &&
+          <View style={styles.actionButtonsContainer}>
+          <TextInput
+            style={styles.input}
+            name='quantity'
+            placeholder='product quantity'
+            keyboardType='numeric'
+            onChangeText={quantity => updateQuantities({ index, quantity })}
+          />
+          <Pressable
+            onPress={() => { updateOrder({ index, item }) }}
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandPrimaryTap
+                  : GlobalStyles.brandPrimary
+              },
+              styles.actionButton
+            ]}>
+            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+              <TextRegular textStyle={styles.text}>
+                Add to order
+              </TextRegular>
+            </View>
+          </Pressable>
+        </View>}
+        {order[index][0] > 0 &&
+          <View style={styles.actionButtonsContainer}>
+          <TextInput
+            style={styles.input2}
+            name='quantity'
+            placeholder='product quantity'
+            keyboardType='numeric'
+            onChangeText={quantity => updateQuantities({ index, quantity })}
+          />
+          <Pressable
+            onPress={() => { updateOrder({ index, item }) }}
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandBlueTap
+                  : GlobalStyles.brandGreen
+              },
+              styles.actionButton
+            ]}>
+            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+              <TextRegular textStyle={styles.text}>
+                Update quantity
+              </TextRegular>
+            </View>
+          </Pressable>
+          <Pressable
+            onPress={() => { updateOrder({ index, item, quantity: 0 }) }}
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandPrimaryTap
+                  : GlobalStyles.brandPrimary
+              },
+              styles.actionButton
+            ]}>
+            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+              <TextRegular textStyle={styles.text}>
+                Remove from order
+              </TextRegular>
+            </View>
+          </Pressable>
+        </View>}
       </ImageCard>
     )
   }
@@ -65,6 +141,10 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
   const fetchRestaurantDetail = async () => {
     try {
       const fetchedRestaurant = await getDetail(route.params.id)
+      const products = fetchedRestaurant.products.map(x => [0, 0])
+      const auxQuantities = fetchedRestaurant.products.map(x => 0)
+      setQuantities(auxQuantities)
+      setOrder(products)
       setRestaurant(fetchedRestaurant)
     } catch (error) {
       showMessage({
@@ -96,6 +176,22 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1
+  },
+  input: {
+    borderColor: GlobalStyles.brandPrimary,
+    borderWidth: 2,
+    height: 40,
+    textAlign: 'center',
+    marginVertical: 12,
+    paddingHorizontal: 10
+  },
+  input2: {
+    borderColor: GlobalStyles.brandGreen,
+    borderWidth: 2,
+    height: 40,
+    textAlign: 'center',
+    marginVertical: 12,
+    paddingHorizontal: 10
   },
   row: {
     padding: 15,
