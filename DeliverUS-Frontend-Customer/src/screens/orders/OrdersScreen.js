@@ -145,19 +145,6 @@ export default function OrdersScreen ({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.FRHeader}>
-        <TextSemiBold>FR5: Listing my confirmed orders</TextSemiBold>
-        <TextRegular>
-          A Customer will be able to check his/her confirmed orders, sorted from the most recent to the oldest. ESTO TA DONE AMIGO ඞ
-        </TextRegular>
-        <TextSemiBold>FR8: Edit/delete order</TextSemiBold>
-        <TextRegular>
-          If the order is in the state pending, the customer can edit or remove the products included or remove the
-          whole order. The delivery address can also be modified in the state pending. If the order is in the state
-          sent or delivered no edition is allowed.
-        </TextRegular>
-      </View>
-
       {/* Lista de pedidos */}
       <View style={styles.ordersContainer}>
         { orders != null && orders.length > 0
@@ -175,20 +162,6 @@ export default function OrdersScreen ({ navigation, route }) {
             )}
       </View>
 
-      <Pressable
-        onPress={() => {
-          navigation.navigate('OrderDetailScreen', { id: Math.floor(Math.random() * 100) })
-        }}
-        style={({ pressed }) => [
-          {
-            backgroundColor: pressed ? brandPrimaryTap : brandPrimary
-          },
-          styles.button
-        ]}
-      >
-        <TextRegular textStyle={styles.text}>Go to Order Detail Screen</TextRegular>
-      </Pressable>
-
       {/* Mensaje de confirmación */}
       <DeleteModal
           isVisible={ordersToBeDeleted !== null}
@@ -203,11 +176,6 @@ export default function OrdersScreen ({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  FRHeader: { // TODO: remove this style and the related <View>. Only for clarification purposes
-    justifyContent: 'center',
-    alignItems: 'left',
-    margin: 50
-  },
   actionButton: {
     borderRadius: 8,
     height: 40,
@@ -241,7 +209,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'left',
     alignItems: 'left',
-    margin: 50
+    margin: 10
   },
   button: {
     borderRadius: 8,
