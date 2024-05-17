@@ -36,46 +36,52 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
 
   const renderFooter = () => {
     return (
-      <View>
+      <View style={[{
+        flex: 1,
+        margin: 30
+      }]}>
         {order.some(product => product[0] > 0) &&
+        <View style={styles.footerContainer}>
+          <TextSemiBold>Total price: {order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, 0)}</TextSemiBold>
           <View style={styles.actionButtonsContainer}>
-          <Pressable
-            onPress={() => {
-              navigation.navigate('ConfirmOrderScreen', {
-                order, id: route.params.id
-              })
-            }}
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed
-                  ? GlobalStyles.brandBlueTap
-                  : GlobalStyles.brandGreen
-              },
-              styles.actionButton
-            ]}>
-            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
-              <TextRegular textStyle={styles.text}>
-                Create order
-              </TextRegular>
+            <Pressable
+              onPress={() => {
+                navigation.navigate('ConfirmOrderScreen', {
+                  order, id: route.params.id
+                })
+              }}
+              style={({ pressed }) => [
+                {
+                  backgroundColor: pressed
+                    ? GlobalStyles.brandBlueTap
+                    : GlobalStyles.brandGreen
+                },
+                styles.actionButton
+              ]}>
+              <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+                <TextRegular textStyle={styles.text}>
+                  Create order
+                </TextRegular>
+              </View>
+            </Pressable>
+            <Pressable
+              onPress={() => { cancelOrder() }}
+              style={({ pressed }) => [
+                {
+                  backgroundColor: pressed
+                    ? GlobalStyles.brandPrimaryTap
+                    : GlobalStyles.brandPrimary
+                },
+                styles.actionButton
+              ]}>
+              <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+                <TextRegular textStyle={styles.text}>
+                  Cancel order
+                </TextRegular>
+              </View>
+            </Pressable>
             </View>
-          </Pressable>
-          <Pressable
-            onPress={() => { cancelOrder() }}
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed
-                  ? GlobalStyles.brandPrimaryTap
-                  : GlobalStyles.brandPrimary
-              },
-              styles.actionButton
-            ]}>
-            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
-              <TextRegular textStyle={styles.text}>
-                Cancel order
-              </TextRegular>
-            </View>
-          </Pressable>
-        </View>}
+          </View>}
       </View>
     )
   }
@@ -122,7 +128,11 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
             name='quantity'
             placeholder='product quantity'
             keyboardType='numeric'
-            onChangeText={quantity => updateQuantities({ index, quantity })}
+            onChangeText={quantity => {
+              if (parseInt(quantity) > 0) {
+                updateQuantities({ index, quantity })
+              }
+            }}
           />
           <Pressable
             onPress={() => { updateOrder({ index, item }) }}
@@ -148,7 +158,11 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
             name='quantity'
             placeholder='product quantity'
             keyboardType='numeric'
-            onChangeText={quantity => updateQuantities({ index, quantity })}
+            onChangeText={quantity => {
+              if (parseInt(quantity) > 0) {
+                updateQuantities({ index, quantity })
+              }
+            }}
           />
           <Pressable
             onPress={() => { updateOrder({ index, item }) }}
@@ -214,26 +228,41 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
   }
 
   return (
+    <View style={styles.container}>
       <FlatList
-          ListHeaderComponent={renderHeader}
-          ListFooterComponent={renderFooter}
-          ListEmptyComponent={renderEmptyProductsList}
-          style={styles.container}
-          data={restaurant.products}
-          renderItem={renderProduct}
-          keyExtractor={item => item.id.toString()}
-        />
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        ListEmptyComponent={renderEmptyProductsList}
+        style={styles.container}
+        data={restaurant.products}
+        renderItem={renderProduct}
+        keyExtractor={item => item.id.toString()}
+      />
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  FRHeader: { // TODO: remove this style and the related <View>. Only for clarification purposes
-    justifyContent: 'center',
-    alignItems: 'left',
-    margin: 50
-  },
   container: {
-    flex: 1
+    flex: 1,
+    margin: 0
+  },
+  footerContainer: {
+    padding: 10,
+    borderColor: GlobalStyles.brandPrimary,
+    borderWidth: 2,
+    backgroundColor: 'white',
+    borderTopWidth: 10,
+    borderTopColor: '#ccc',
+    width: '100%',
+    alignItems: 'center',
+    bottom: 0
+  },
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    bottom: 5,
+    alignItems: 'center',
+    width: '75%'
   },
   input: {
     borderColor: GlobalStyles.brandPrimary,
@@ -319,11 +348,5 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     flexDirection: 'column',
     width: '50%'
-  },
-  actionButtonsContainer: {
-    flexDirection: 'row',
-    bottom: 5,
-    position: 'absolute',
-    width: '90%'
   }
 })
