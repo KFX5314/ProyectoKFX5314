@@ -47,7 +47,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
           <TextSemiBold>
             {order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, 0) >= 10
               ? 'FREE SHIPPING!'
-              : 'Shipping costs: ' + restaurant.shippingCosts.toFixed(2)}
+              : 'Shipping costs: ' + restaurant.shippingCosts.toFixed(2) + '€'}
           </TextSemiBold>
           <TextSemiBold>
             Total price: {order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, 0) >= 10
