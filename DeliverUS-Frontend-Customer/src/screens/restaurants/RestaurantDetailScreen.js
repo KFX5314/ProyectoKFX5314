@@ -76,14 +76,17 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
                 </TextRegular>
               </View>
             </Pressable>
-
             <Pressable
               onPress={() => {
                 loggedInUser
-                  ? navigation.navigate('ConfirmOrderScreen', {
-                    order, id: route.params.id
+                  ? navigation.navigate('My Orders', {
+                    screen: 'ConfirmOrderScreen',
+                    params: {
+                      order,
+                      id: route.params.id
+                    }
                   })
-                  : navigation.navigate('LoginScreen')
+                  : navigation.navigate('Profile', { screen: 'LoginScreen' })
               }}
               style={({ pressed }) => [
                 {
