@@ -50,10 +50,24 @@ export default function OrderDetailScreen ({ navigation, route }) {
 
   return (
     <View style={{ flex: 1 }}>
+      {/* Imagen de fondo */}
       <ImageBackground style={styles.imageBackground} source={(order.restaurant?.logo) ? { uri: process.env.API_BASE_URL + '/' + order.restaurant.logo } : undefined}></ImageBackground>
+      {/* Id */}
       <TextRegular style={GlobalStyles.headerText}>Order #{order?.id} on {order.restaurant?.name}</TextRegular>
-      <TextRegular style={styles.details}>Placed on {order.createdAt}</TextRegular>
-      <TextRegular style={styles.details}>Status: {order.status}</TextRegular>
+      {/* Fecha de creacion */}
+      <TextRegular style={styles.details}>Placed on {new Date(order.createdAt).toLocaleString().replace(',', ' ')}</TextRegular>
+        {/* Estatus de pedido */}
+        <TextRegular style={styles.details}>Status: 
+          <TextSemiBold textStyle={order.status === 'in process'
+            ? { color: GlobalStyles.brandSecondary }
+            : order.status === 'sent'
+              ? { color: GlobalStyles.brandGreen }
+              : order.status === 'delivered'
+                ? { color: GlobalStyles.brandBlue }
+                : { color: GlobalStyles.brandPrimary }}>
+            { order.status }
+          </TextSemiBold>
+        </TextRegular>
       {order != null && Array.isArray(order.products) && order.products.length > 0
         ? (
         <FlatList
@@ -63,7 +77,7 @@ export default function OrderDetailScreen ({ navigation, route }) {
         />
           )
         : (
-        <TextRegular>Este pedido no tiene productos</TextRegular>
+        <TextRegular>This order has no products!</TextRegular>
           )}
         <TextRegular style={styles.total}>Total: {order.price}€</TextRegular>
         <TextRegular style={styles.shipping}>Includes {order.shippingCosts ? order.shippingCosts.toString() + '€ of shipping' : 'free shipping'}</TextRegular>
