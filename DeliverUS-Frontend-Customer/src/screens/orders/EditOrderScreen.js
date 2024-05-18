@@ -7,27 +7,20 @@ import ImageCard from '../../components/ImageCard'
 import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemibold'
 import * as GlobalStyles from '../../styles/GlobalStyles'
-import { getOrderDetail } from '../../api/OrderEndpoints'
+import { getOrderDetail, update } from '../../api/OrderEndpoints'
 import defaultProductImage from '../../../assets/product.jpeg'
 import { AuthorizationContext } from '../../context/AuthorizationContext'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 
-import { update } from '../../api/OrderEndpoints'
-
-
 export default function OrderDetailScreen ({ navigation, route }) {
   const [order, setOrder] = useState({})
   const { loggedInUser } = useContext(AuthorizationContext)
-  const [editAddress, setEditAddress] = useState(false) 
+  const [editAddress, setEditAddress] = useState(false)
   const [newAddress, setNewAddress] = useState('')
 
   useEffect(() => {
     fetchOrderDetail()
-  }, [route, loggedInUser])
-
-  useEffect(() => {
-    fetchOrderDetail()
-  }, [editAddress])
+  }, [route, loggedInUser, editAddress])
 
   async function fetchOrderDetail () {
     try {
@@ -38,6 +31,28 @@ export default function OrderDetailScreen ({ navigation, route }) {
       console.log(error)
       showMessage({
         message: `There was an error while retrieving order details (id ${route.params.id}). ${error}`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
+
+  async function saveOrderAddress () {
+    try {
+      await update(route.params.id, {
+        products: order.products.map(p => {
+          return {
+            quantity: p.OrderProducts.quantity,
+            productId: p.OrderProducts.ProductId
+          }
+        }),
+        address: newAddress
+      })
+    } catch (error) {
+      console.log(error)
+      showMessage({
+        message: `There was an error while updating order address (id ${route.params.id}). ${error}`,
         type: 'error',
         style: GlobalStyles.flashStyle,
         titleStyle: GlobalStyles.flashTextStyle
@@ -70,18 +85,26 @@ export default function OrderDetailScreen ({ navigation, route }) {
       {/* Dirección */}
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <TextRegular style={styles.details}>Deliver to:</TextRegular>
-        {editAddress ? (
+        {editAddress
+          ? (
           <TextInput
             style={styles.input}
             value={newAddress}
             onChangeText={setNewAddress}
             placeholder='New address'
           />
-        ) : (
+            )
+          : (
           <TextRegular style={styles.details}>{order.address}</TextRegular>
-        )}
+            )}
         <Pressable
-          onPress={() => setEditAddress(!editAddress)}
+          onPress={async () => {
+            if (editAddress) {
+              await saveOrderAddress()
+            }
+
+            setEditAddress(!editAddress)
+          }}
           style={({ pressed }) => [
             {
               backgroundColor: pressed
@@ -92,8 +115,8 @@ export default function OrderDetailScreen ({ navigation, route }) {
           ]}
         >
 
-            {/*lapiz*/}
-            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' , height : 2}]}>
+            {/* lapiz */}
+            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center', height: 2 }]}>
                 <MaterialCommunityIcons name='pencil' color={'white'} size={20} />
                 <TextRegular textStyle={styles.text}>
                     {editAddress ? 'Save' : 'Edit'}
@@ -108,10 +131,10 @@ export default function OrderDetailScreen ({ navigation, route }) {
             renderItem={renderProduct}
             keyExtractor={(item) => item.id.toString()}
           />
-        )
+          )
         : (
           <TextRegular>This order has no products!</TextRegular>
-        )}
+          )}
       <TextRegular style={styles.total}>Total: {order.price?.toFixed(2)}€</TextRegular>
       <TextRegular style={order.shippingCosts ? styles.shipping : styles.freeShipping}>Includes {order.shippingCosts ? order.shippingCosts.toFixed(2) + '€ of shipping' : 'free shipping'}</TextRegular>
     </View>
