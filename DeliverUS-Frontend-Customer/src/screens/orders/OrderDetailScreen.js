@@ -57,8 +57,8 @@ export default function OrderDetailScreen ({ navigation, route }) {
       {/* Fecha de creacion */}
       <TextRegular style={styles.details}>Placed on {new Date(order.createdAt).toLocaleString().replace(',', ' ')}</TextRegular>
         {/* Estatus de pedido */}
-        <TextRegular style={styles.details}>Status: 
-          <TextSemiBold textStyle={order.status === 'in process'
+        <TextRegular style={styles.details}>
+          Status: <TextSemiBold textStyle={order.status === 'in process'
             ? { color: GlobalStyles.brandSecondary }
             : order.status === 'sent'
               ? { color: GlobalStyles.brandGreen }
@@ -80,7 +80,7 @@ export default function OrderDetailScreen ({ navigation, route }) {
         <TextRegular>This order has no products!</TextRegular>
           )}
         <TextRegular style={styles.total}>Total: {order.price}€</TextRegular>
-        <TextRegular style={styles.shipping}>Includes {order.shippingCosts ? order.shippingCosts.toString() + '€ of shipping' : 'free shipping'}</TextRegular>
+        <TextRegular style={order.shippingCosts ? styles.shipping : styles.freeShipping}>Includes {order.shippingCosts ? order.shippingCosts.toString() + '€ of shipping' : 'free shipping'}</TextRegular>
     </View>
   )
 }
@@ -101,5 +101,11 @@ const styles = StyleSheet.create({
   shipping: {
     textAlign: 'right',
     padding: 8
+  },
+  freeShipping: {
+    textAlign: 'right',
+    padding: 8,
+    color: GlobalStyles.brandGreen,
+    fontWeight: 'bold'
   }
 })
