@@ -59,12 +59,12 @@ export default function OrderDetailScreen ({ navigation, route }) {
         {/* Estatus de pedido */}
         <TextRegular style={styles.details}>
           Status: <TextSemiBold textStyle={order.status === 'in process'
-            ? { color: GlobalStyles.brandSecondary }
-            : order.status === 'sent'
-              ? { color: GlobalStyles.brandGreen }
-              : order.status === 'delivered'
-                ? { color: GlobalStyles.brandBlue }
-                : { color: GlobalStyles.brandPrimary }}>
+          ? { color: GlobalStyles.brandSecondary }
+          : order.status === 'sent'
+            ? { color: GlobalStyles.brandGreen }
+            : order.status === 'delivered'
+              ? { color: GlobalStyles.brandBlue }
+              : { color: GlobalStyles.brandPrimary }}>
             { order.status }
           </TextSemiBold>
         </TextRegular>

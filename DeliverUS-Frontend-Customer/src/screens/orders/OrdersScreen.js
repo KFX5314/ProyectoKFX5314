@@ -3,10 +3,9 @@ import React, { useContext, useEffect, useState } from 'react'
 import { StyleSheet, View, Pressable, FlatList } from 'react-native'
 import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemibold'
-import { brandPrimary, brandPrimaryTap } from '../../styles/GlobalStyles'
 
 import { AuthorizationContext } from '../../context/AuthorizationContext'
-import { getAll,remove } from '../../api/OrderEndpoints'
+import { getAll } from '../../api/OrderEndpoints'
 import { showMessage } from 'react-native-flash-message'
 import * as GlobalStyles from '../../styles/GlobalStyles'
 import ImageCard from '../../components/ImageCard'
@@ -37,7 +36,7 @@ export default function OrdersScreen ({ navigation, route }) {
 
   const removeOrder = async (order) => {
     try {
-      //await remove(order.id) //TODO DESCOMENTAR ESTA PARTE DEL CÓDIGO, ES SOLO PA NO TENER QUE REPOBLAR LA BASE DE DATOS CADA VEZ QUE TESTEO ESTO.
+      // await remove(order.id) //TODO DESCOMENTAR ESTA PARTE DEL CÓDIGO, ES SOLO PA NO TENER QUE REPOBLAR LA BASE DE DATOS CADA VEZ QUE TESTEO ESTO.
       await fetchOrders()
       setOrderToBeDeleted(null)
       showMessage({
@@ -81,7 +80,7 @@ export default function OrdersScreen ({ navigation, route }) {
         <TextRegular>Order placed on: <TextSemiBold>{new Date(item.createdAt).toLocaleString().replace(',', '  ')}</TextSemiBold></TextRegular>
 
         {/* Estatus de pedido */}
-        <TextRegular>Status:
+        <TextRegular>Status:&nbsp;
           <TextSemiBold textStyle={item.status === 'in process'
             ? { color: GlobalStyles.brandSecondary }
             : item.status === 'sent'
@@ -97,11 +96,11 @@ export default function OrdersScreen ({ navigation, route }) {
         <TextRegular>Price: <TextSemiBold>{item.price}€</TextSemiBold></TextRegular>
 
         {/* Modificaciones del pedido */}
-        {item.status === 'pending' &&// Renderizado condicional
+        {item.status === 'pending' &&
         <View style={styles.actionButtonsContainer}>
           <Pressable
            onPress={() => {
-            navigation.navigate('EditOrderScreen', { orderId: item.id, id: item.restaurant.id })
+             navigation.navigate('EditOrderScreen', { orderId: item.id, id: item.restaurant.id })
            }}
             style={({ pressed }) => [
               {
@@ -121,7 +120,7 @@ export default function OrdersScreen ({ navigation, route }) {
 
           {/* Boton de borrar */}
           <Pressable
-            onPress={() => { setOrderToBeDeleted(item) }}// DONE
+            onPress={() => { setOrderToBeDeleted(item) }}
             style={({ pressed }) => [
               {
                 backgroundColor: pressed
@@ -144,34 +143,27 @@ export default function OrdersScreen ({ navigation, route }) {
   }
 
   return (
-    <View style={styles.container}>
+    <>
       {/* Lista de pedidos */}
-      <View style={styles.ordersContainer}>
-        { orders != null && orders.length > 0
-          ? (
-          <FlatList
-            data={orders}
-            renderItem={renderOrder}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={styles.orderListContainer}
-            horizontal={false}
-          />
-            )
-          : (
-          <TextRegular>No orders available.</TextRegular>
-            )}
-      </View>
+      { orders != null && orders.length > 0
+        ? <FlatList
+          data={orders}
+          renderItem={renderOrder}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.orderListContainer}
+          horizontal={false}
+        />
+        : <TextRegular>No orders available.</TextRegular>}
 
       {/* Mensaje de confirmación */}
       <DeleteModal
           isVisible={ordersToBeDeleted !== null}
           onCancel={() => setOrderToBeDeleted(null)}
           onConfirm={() => removeOrder(ordersToBeDeleted)}>
-            <TextRegular>The products of this order will be deleted as well</TextRegular>
-            <TextRegular>If the order is not in pending sate, it cannot be deleted.</TextRegular>
-        </DeleteModal>
-
-    </View>
+          <TextRegular>The products of this order will be deleted as well</TextRegular>
+          <TextRegular>If the order is not in pending sate, it cannot be deleted.</TextRegular>
+      </DeleteModal>
+    </>
   )
 }
 
@@ -179,51 +171,25 @@ const styles = StyleSheet.create({
   actionButton: {
     borderRadius: 8,
     height: 40,
-    marginTop: 12,
-    margin: '1%',
     padding: 10,
-    alignSelf: 'center',
-    flexDirection: 'column',
-    width: '50%'
+    flex: 1,
+    flexDirection: 'row'
   },
   actionButtonsContainer: {
-    flexDirection: 'row',
-    bottom: 0,
-    position: 'absolute',
-    width: '90%'
-  },
-  ordersContainer: {
     flex: 1,
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: GlobalStyles.brandSeparator
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8
   },
   orderListContainer: {
     flexGrow: 1,
     flexDirection: 'column',
     alignItems: 'stretch'
   },
-  container: {
-    flex: 1,
-    justifyContent: 'left',
-    alignItems: 'left',
-    margin: 10
-  },
-  button: {
-    borderRadius: 8,
-    height: 40,
-    marginTop: 12,
-    padding: 10,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    width: '80%'
-  },
   text: {
     fontSize: 16,
     color: 'white',
     alignSelf: 'center',
     marginLeft: 5
-  },
+  }
 })
