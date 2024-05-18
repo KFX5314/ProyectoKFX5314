@@ -45,7 +45,14 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
         {order.some(product => product[0] > 0) &&
         <View style={styles.footerContainer}>
           <TextSemiBold>
-            Total price: {order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, 0).toFixed(2)}€
+            {order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, 0) >= 10
+              ? 'FREE SHIPPING!'
+              : 'Shipping costs: ' + restaurant.shippingCosts.toFixed(2)}
+          </TextSemiBold>
+          <TextSemiBold>
+            Total price: {order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, 0) >= 10
+            ? order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, 0).toFixed(2)
+            : order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, restaurant.shippingCosts).toFixed(2)}€
           </TextSemiBold>
           <View style={styles.actionButtonsContainer}>
             <Pressable
