@@ -29,7 +29,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
   const getOrderTotal = () => {
     const subtotal = getOrderSubTotal()
 
-    return subtotal < 10 ? subtotal + restaurant.shippingCosts : subtotal
+    return subtotal <= 10 ? subtotal + restaurant.shippingCosts : subtotal
   }
 
   const renderHeader = () => {
@@ -54,7 +54,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
         {Object.keys(order).length > 0 &&
         <View style={styles.footerContainer}>
           <TextSemiBold>
-            {getOrderSubTotal() < 10 ? `Shipping costs: ${restaurant.shippingCosts.toFixed(2)}€` : 'Free Shipping!'}
+            {getOrderSubTotal() <= 10 ? `Shipping costs: ${restaurant.shippingCosts.toFixed(2)}€` : 'Free Shipping!'}
           </TextSemiBold>
           <TextSemiBold>
             Total price: {getOrderTotal().toFixed(2)}€
