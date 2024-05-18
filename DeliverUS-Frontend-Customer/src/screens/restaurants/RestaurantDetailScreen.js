@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { StyleSheet, View, FlatList, ImageBackground, Image, Pressable, TextInput } from 'react-native'
 import { showMessage } from 'react-native-flash-message'
 import { getDetail } from '../../api/RestaurantEndpoints'
@@ -8,16 +8,18 @@ import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemibold'
 import * as GlobalStyles from '../../styles/GlobalStyles'
 import defaultProductImage from '../../../assets/product.jpeg'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { AuthorizationContext } from '../../context/AuthorizationContext'
+// import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 export default function RestaurantDetailScreen ({ navigation, route }) {
   const [restaurant, setRestaurant] = useState({})
   const [order, setOrder] = useState([])
   const [quantities, setQuantities] = useState([])
+  const { loggedInUser } = useContext(AuthorizationContext)
 
   useEffect(() => {
     fetchRestaurantDetail()
-  }, [route])
+  }, [loggedInUser, route])
 
   const renderHeader = () => {
     return (
@@ -42,13 +44,17 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
       }]}>
         {order.some(product => product[0] > 0) &&
         <View style={styles.footerContainer}>
-          <TextSemiBold>Total price: {order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, 0)}</TextSemiBold>
+          <TextSemiBold>
+            Total price: {order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, 0).toFixed(2)}€
+          </TextSemiBold>
           <View style={styles.actionButtonsContainer}>
             <Pressable
               onPress={() => {
-                navigation.navigate('ConfirmOrderScreen', {
-                  order, id: route.params.id
-                })
+                loggedInUser
+                  ? navigation.navigate('ConfirmOrderScreen', {
+                    order, id: route.params.id
+                  })
+                  : navigation.navigate('LoginScreen')
               }}
               style={({ pressed }) => [
                 {
@@ -60,7 +66,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
               ]}>
               <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
                 <TextRegular textStyle={styles.text}>
-                  Create order
+                  Place order
                 </TextRegular>
               </View>
             </Pressable>
@@ -96,7 +102,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
       quantity = quantities[index]
     }
     auxOrder[index][0] = quantity
-    auxOrder[index][1] = item.price * quantity
+    auxOrder[index][1] = item.price.toFixed(2) * quantity
     setOrder(auxOrder)
   }
   function updateQuantities ({ index, quantity }) {
@@ -118,7 +124,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
         {order[index][0] > 0 &&
         <View style={styles.orderInfoContainer}>
           <TextSemiBold>{order[index][0]} items</TextSemiBold>
-          <TextSemiBold>Total price: {order[index][1]}</TextSemiBold>
+          <TextSemiBold>Subtotal: {order[index][1].toFixed(2)}€</TextSemiBold>
         </View>
         }
         {order[index][0] === 0 && item.availability &&
