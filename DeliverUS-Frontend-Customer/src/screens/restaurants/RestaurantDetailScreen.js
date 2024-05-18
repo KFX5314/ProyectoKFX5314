@@ -9,25 +9,36 @@ import TextSemiBold from '../../components/TextSemibold'
 import * as GlobalStyles from '../../styles/GlobalStyles'
 import defaultProductImage from '../../../assets/product.jpeg'
 import { AuthorizationContext } from '../../context/AuthorizationContext'
-// import { MaterialCommunityIcons } from '@expo/vector-icons'
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 
 export default function RestaurantDetailScreen ({ navigation, route }) {
   const [restaurant, setRestaurant] = useState({})
-  const [order, setOrder] = useState([])
-  const [quantities, setQuantities] = useState([])
+  const [order, setOrder] = useState({})
   const { loggedInUser } = useContext(AuthorizationContext)
 
   useEffect(() => {
-    fetchRestaurantDetail()
+    fetchRestaurantDetails()
   }, [loggedInUser, route])
+
+  const getOrderSubTotal = () => {
+    return Object.entries(order).map((v) => {
+      return v[1] * restaurant.products.find(p => p.id.toString() === v[0]).price
+    }).reduce((a, b) => a + b, 0)
+  }
+
+  const getOrderTotal = () => {
+    const subtotal = getOrderSubTotal()
+
+    return subtotal < 10 ? subtotal + restaurant.shippingCosts : subtotal
+  }
 
   const renderHeader = () => {
     return (
       <View>
-        <ImageBackground source={(restaurant?.heroImage) ? { uri: process.env.API_BASE_URL + '/' + restaurant.heroImage, cache: 'force-cache' } : undefined} style={styles.imageBackground}>
+        <ImageBackground source={(restaurant?.heroImage) ? { uri: process.env.API_BASE_URL + '/' + restaurant.heroImage } : undefined} style={styles.imageBackground}>
           <View style={styles.restaurantHeaderContainer}>
             <TextSemiBold textStyle={styles.textTitle}>{restaurant.name}</TextSemiBold>
-            <Image style={styles.image} source={restaurant.logo ? { uri: process.env.API_BASE_URL + '/' + restaurant.logo, cache: 'force-cache' } : undefined} />
+            <Image style={styles.image} source={restaurant.logo ? { uri: process.env.API_BASE_URL + '/' + restaurant.logo } : undefined} />
             <TextRegular textStyle={styles.description}>{restaurant.description}</TextRegular>
             <TextRegular textStyle={styles.description}>{restaurant.restaurantCategory ? restaurant.restaurantCategory.name : ''}</TextRegular>
           </View>
@@ -38,23 +49,34 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
 
   const renderFooter = () => {
     return (
-      <View style={[{
-        flex: 1,
-        margin: 30
-      }]}>
-        {order.some(product => product[0] > 0) &&
+      <View style={{ flex: 1, margin: 30 }}>
+
+        {Object.keys(order).length > 0 &&
         <View style={styles.footerContainer}>
           <TextSemiBold>
-            {order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, 0) >= 10
-              ? 'FREE SHIPPING!'
-              : 'Shipping costs: ' + restaurant.shippingCosts.toFixed(2) + '€'}
+            {getOrderSubTotal() < 10 ? `Shipping costs: ${restaurant.shippingCosts.toFixed(2)}€` : 'Free Shipping!'}
           </TextSemiBold>
           <TextSemiBold>
-            Total price: {order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, 0) >= 10
-            ? order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, 0).toFixed(2)
-            : order.flatMap(p => { return p[1] }).reduce((acc, curr) => acc + curr, restaurant.shippingCosts).toFixed(2)}€
+            Total price: {getOrderTotal().toFixed(2)}€
           </TextSemiBold>
-          <View style={styles.actionButtonsContainer}>
+          <View style={styles.orderActionsContainer}>
+            <Pressable
+              onPress={() => { setOrder({}) }}
+              style={({ pressed }) => [
+                {
+                  backgroundColor: pressed
+                    ? GlobalStyles.brandPrimaryTap
+                    : GlobalStyles.brandPrimary
+                },
+                styles.actionButton
+              ]}>
+              <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+                <TextRegular textStyle={styles.text}>
+                  Cancel order
+                </TextRegular>
+              </View>
+            </Pressable>
+
             <Pressable
               onPress={() => {
                 loggedInUser
@@ -77,47 +99,15 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
                 </TextRegular>
               </View>
             </Pressable>
-            <Pressable
-              onPress={() => { cancelOrder() }}
-              style={({ pressed }) => [
-                {
-                  backgroundColor: pressed
-                    ? GlobalStyles.brandPrimaryTap
-                    : GlobalStyles.brandPrimary
-                },
-                styles.actionButton
-              ]}>
-              <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
-                <TextRegular textStyle={styles.text}>
-                  Cancel order
-                </TextRegular>
-              </View>
-            </Pressable>
-            </View>
-          </View>}
+          </View>
+
+        </View>}
+
       </View>
     )
   }
 
-  function cancelOrder () {
-    const auxOrder = [...order].map(x => [0, 0])
-    setOrder(auxOrder)
-  }
-  function updateOrder ({ index, item, quantity = null }) {
-    const auxOrder = [...order]
-    if (quantity === null) {
-      quantity = quantities[index]
-    }
-    auxOrder[index][0] = quantity
-    auxOrder[index][1] = item.price.toFixed(2) * quantity
-    setOrder(auxOrder)
-  }
-  function updateQuantities ({ index, quantity }) {
-    const auxQuantities = [...quantities]
-    auxQuantities[index] = parseInt(quantity)
-    setQuantities(auxQuantities)
-  }
-  const renderProduct = ({ index, item }) => {
+  const renderProduct = ({ item }) => {
     return (
       <ImageCard
         imageUri={item.image ? { uri: process.env.API_BASE_URL + '/' + item.image } : defaultProductImage}
@@ -125,91 +115,69 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
       >
         <TextRegular numberOfLines={2}>{item.description}</TextRegular>
         <TextSemiBold textStyle={styles.price}>{item.price.toFixed(2)}€</TextSemiBold>
+
         {!item.availability &&
-          <TextRegular textStyle={styles.availability }>Not available</TextRegular>
-        }
-        {order[index][0] > 0 &&
-        <View style={styles.orderInfoContainer}>
-          <TextSemiBold>{order[index][0]} items</TextSemiBold>
-          <TextSemiBold>Subtotal: {order[index][1].toFixed(2)}€</TextSemiBold>
-        </View>
-        }
-        {order[index][0] === 0 && item.availability &&
-          <View style={styles.actionButtonsContainer}>
-          <TextInput
-            style={styles.input}
-            name='quantity'
-            placeholder='product quantity'
-            keyboardType='numeric'
-            onChangeText={quantity => {
-              if (parseInt(quantity) > 0) {
-                updateQuantities({ index, quantity })
-              }
-            }}
-          />
-          <Pressable
-            onPress={() => { updateOrder({ index, item }) }}
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed
-                  ? GlobalStyles.brandPrimaryTap
-                  : GlobalStyles.brandPrimary
-              },
-              styles.actionButton
-            ]}>
-            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
-              <TextRegular textStyle={styles.text}>
-                Add to order
-              </TextRegular>
-            </View>
-          </Pressable>
-        </View>}
-        {order[index][0] > 0 &&
-          <View style={styles.actionButtonsContainer}>
-          <TextInput
-            style={styles.input2}
-            name='quantity'
-            placeholder='product quantity'
-            keyboardType='numeric'
-            onChangeText={quantity => {
-              if (parseInt(quantity) > 0) {
-                updateQuantities({ index, quantity })
-              }
-            }}
-          />
-          <Pressable
-            onPress={() => { updateOrder({ index, item }) }}
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed
-                  ? GlobalStyles.brandBlueTap
-                  : GlobalStyles.brandGreen
-              },
-              styles.actionButton
-            ]}>
-            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
-              <TextRegular textStyle={styles.text}>
-                Update quantity
-              </TextRegular>
-            </View>
-          </Pressable>
-          <Pressable
-            onPress={() => { updateOrder({ index, item, quantity: 0 }) }}
-            style={({ pressed }) => [
-              {
-                backgroundColor: pressed
-                  ? GlobalStyles.brandPrimaryTap
-                  : GlobalStyles.brandPrimary
-              },
-              styles.actionButton
-            ]}>
-            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
-              <TextRegular textStyle={styles.text}>
-                Remove from order
-              </TextRegular>
-            </View>
-          </Pressable>
-        </View>}
+          <TextRegular textStyle={styles.availability }>Not available</TextRegular>}
+
+        {order[item.id] &&
+          <View style={styles.orderInfoContainer}>
+            <TextSemiBold>{order[item.id]} items</TextSemiBold>
+            <TextSemiBold>Subtotal: {(order[item.id] * item.price).toFixed(2)}€</TextSemiBold>
+          </View>}
+
+        {item.availability &&
+          <View style={styles.quantityContainer}>
+            <Pressable
+              onPress={() => {
+                if (order[item.id] > 1) {
+                  setOrder({
+                    ...order,
+                    [item.id]: order[item.id] - 1
+                  })
+                } else {
+                  const newOrder = { ...order }
+                  delete newOrder[item.id]
+                  setOrder(newOrder)
+                }
+              }}
+            >
+              <View>
+                <MaterialCommunityIcons name='minus' size={20} />
+              </View>
+            </Pressable>
+            <TextInput
+              style={styles.quantity}
+              name='quantity'
+              value={order[item.id] || 0}
+              placeholder='quantity'
+              keyboardType='numeric'
+              onChangeText={value => {
+                const newOrder = { ...order }
+                const quantity = parseInt(value)
+
+                if (!quantity || quantity <= 0) {
+                  delete newOrder[item.id]
+                } else {
+                  newOrder[item.id] = quantity
+                }
+
+                setOrder(newOrder)
+              }}
+            />
+            <Pressable
+              onPress={() => {
+                setOrder({
+                  ...order,
+                  [item.id]: (order[item.id] || 0) + 1
+                })
+              }}
+            >
+              <View>
+                <MaterialCommunityIcons name='plus' size={20} />
+              </View>
+            </Pressable>
+          </View>}
+
       </ImageCard>
     )
   }
@@ -222,14 +190,9 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
     )
   }
 
-  const fetchRestaurantDetail = async () => {
+  const fetchRestaurantDetails = async () => {
     try {
-      const fetchedRestaurant = await getDetail(route.params.id)
-      const products = fetchedRestaurant.products.map(x => [0, 0])
-      const auxQuantities = fetchedRestaurant.products.map(x => 0)
-      setQuantities(auxQuantities)
-      setOrder(products)
-      setRestaurant(fetchedRestaurant)
+      setRestaurant(await getDetail(route.params.id))
     } catch (error) {
       showMessage({
         message: `There was an error while retrieving restaurant details (id ${route.params.id}). ${error}`,
@@ -241,57 +204,37 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        ListHeaderComponent={renderHeader}
-        ListFooterComponent={renderFooter}
-        ListEmptyComponent={renderEmptyProductsList}
-        style={styles.container}
-        data={restaurant.products}
-        renderItem={renderProduct}
-        keyExtractor={item => item.id.toString()}
-      />
-    </View>
+    <FlatList
+      ListHeaderComponent={renderHeader}
+      ListFooterComponent={renderFooter}
+      ListEmptyComponent={renderEmptyProductsList}
+      data={restaurant.products}
+      renderItem={renderProduct}
+      keyExtractor={item => item.id.toString()}
+    />
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
+  productCard: {
     flex: 1,
-    margin: 0
+    justifyContent: 'space-between'
   },
   footerContainer: {
     padding: 10,
-    borderColor: GlobalStyles.brandPrimary,
-    borderWidth: 2,
-    backgroundColor: 'white',
-    borderTopWidth: 10,
-    borderTopColor: '#ccc',
-    width: '100%',
-    alignItems: 'center',
-    bottom: 0
+    alignItems: 'center'
   },
-  actionButtonsContainer: {
+  quantityContainer: {
+    flex: 1,
     flexDirection: 'row',
-    bottom: 5,
-    alignItems: 'center',
-    width: '75%'
+    alignItems: 'center'
   },
-  input: {
-    borderColor: GlobalStyles.brandPrimary,
-    borderWidth: 2,
-    height: 40,
-    textAlign: 'center',
-    marginVertical: 12,
-    paddingHorizontal: 10
-  },
-  input2: {
+  quantity: {
     borderColor: GlobalStyles.brandGreen,
     borderWidth: 2,
+    borderRadius: 2,
     height: 40,
-    textAlign: 'center',
-    marginVertical: 12,
-    paddingHorizontal: 10
+    textAlign: 'center'
   },
   orderInfoContainer: {
     position: 'absolute',
@@ -332,15 +275,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 50
   },
-  button: {
-    borderRadius: 8,
-    height: 40,
-    marginTop: 12,
-    padding: 10,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    width: '80%'
-  },
   text: {
     fontSize: 16,
     color: 'white',
@@ -352,14 +286,19 @@ const styles = StyleSheet.create({
     marginRight: 5,
     color: GlobalStyles.brandSecondary
   },
+  orderActionsContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 8,
+    width: '100%',
+    marginTop: 16
+  },
   actionButton: {
+    flex: 1,
     borderRadius: 8,
     height: 40,
-    marginTop: 12,
-    margin: '1%',
     padding: 10,
     alignSelf: 'center',
-    flexDirection: 'column',
-    width: '50%'
+    flexDirection: 'column'
   }
 })
