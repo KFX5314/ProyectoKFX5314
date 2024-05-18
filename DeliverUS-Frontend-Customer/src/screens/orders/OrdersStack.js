@@ -3,6 +3,7 @@ import React from 'react'
 import OrdersScreen from './OrdersScreen'
 import OrderDetailScreen from './OrderDetailScreen'
 import EditOrderScreen from './EditOrderScreen'
+import ConfirmOrderScreen from './ConfirmOrderScreen'
 
 const Stack = createNativeStackNavigator()
 
@@ -26,6 +27,12 @@ export default function OrdersStack () {
         component={EditOrderScreen}
         options={{
           title: 'Order Changes'
+        }} />
+      <Stack.Screen
+        name='ConfirmOrderScreen'
+        component={ConfirmOrderScreen}
+        options={{
+          title: 'Place Order'
         }} />
     </Stack.Navigator>
   )
