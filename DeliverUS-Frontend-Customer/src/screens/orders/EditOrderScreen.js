@@ -14,19 +14,40 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 export default function OrderDetailScreen ({ navigation, route }) {
   const [order, setOrder] = useState({})
+  const [modifiedOrder, setModifiedOrder] = useState({})
   const { loggedInUser } = useContext(AuthorizationContext)
-  const [editAddress, setEditAddress] = useState(false)
+  const [editingAddress, setEditingAddress] = useState(false)
   const [newAddress, setNewAddress] = useState('')
 
   useEffect(() => {
     fetchOrderDetail()
-  }, [route, loggedInUser, editAddress])
+  }, [route, loggedInUser, editingAddress])
+
+  const getOrderSubTotal = () => {
+    return Object.entries(modifiedOrder).map((v) => {
+      return v[1] * order.products.find(p => p.id.toString() === v[0]).price
+    }).reduce((a, b) => a + b, 0)
+  }
+
+  const getOrderTotal = () => {
+    const subtotal = getOrderSubTotal()
+
+    return subtotal < 10 ? subtotal + (order.restaurant.shippingCosts || 0) : subtotal
+  }
 
   async function fetchOrderDetail () {
     try {
       const fetchedOrder = await getOrderDetail(route.params.id)
       setOrder(fetchedOrder)
       setNewAddress(fetchedOrder.address)
+
+      const newOrder = {}
+
+      for (const product of fetchedOrder.products) {
+        newOrder[product.id] = product.OrderProducts.quantity
+      }
+
+      setModifiedOrder(newOrder)
     } catch (error) {
       console.log(error)
       showMessage({
@@ -38,13 +59,13 @@ export default function OrderDetailScreen ({ navigation, route }) {
     }
   }
 
-  async function saveOrderAddress () {
+  async function saveOrder () {
     try {
       await update(route.params.id, {
-        products: order.products.map(p => {
+        products: Object.entries(modifiedOrder).map(v => {
           return {
-            quantity: p.OrderProducts.quantity,
-            productId: p.OrderProducts.ProductId
+            quantity: v[1],
+            productId: v[0]
           }
         }),
         address: newAddress
@@ -68,8 +89,64 @@ export default function OrderDetailScreen ({ navigation, route }) {
       >
         <TextRegular numberOfLines={2}>{item.description}</TextRegular>
         <TextSemiBold textStyle={styles.price}>{item.price.toFixed(2)}€</TextSemiBold>
-        <TextRegular>Quantity: <TextSemiBold textStyle={styles.price}>{item.OrderProducts.quantity}</TextSemiBold></TextRegular>
-        <TextRegular>Total: <TextSemiBold textStyle={styles.price}>{(item.OrderProducts.quantity * item.price).toFixed(2)}€</TextSemiBold></TextRegular>
+
+        {modifiedOrder[item.id] &&
+          <View style={styles.orderInfoContainer}>
+            <TextSemiBold>{modifiedOrder[item.id]} items</TextSemiBold>
+            <TextSemiBold>Subtotal: {(modifiedOrder[item.id] * item.price).toFixed(2)}€</TextSemiBold>
+          </View>}
+
+        <View style={styles.quantityContainer}>
+            <Pressable
+              onPress={() => {
+                if (modifiedOrder[item.id] > 1) {
+                  setModifiedOrder({
+                    ...modifiedOrder,
+                    [item.id]: modifiedOrder[item.id] - 1
+                  })
+                } else {
+                  const newOrder = { ...modifiedOrder }
+                  delete newOrder[item.id]
+                  setModifiedOrder(newOrder)
+                }
+              }}
+            >
+              <View>
+                <MaterialCommunityIcons name='minus' size={20} />
+              </View>
+            </Pressable>
+            <TextInput
+              style={styles.quantity}
+              name='quantity'
+              value={modifiedOrder[item.id] || 0}
+              placeholder='quantity'
+              keyboardType='numeric'
+              onChangeText={value => {
+                const newOrder = { ...modifiedOrder }
+                const quantity = parseInt(value)
+
+                if (!quantity || quantity <= 0) {
+                  delete newOrder[item.id]
+                } else {
+                  newOrder[item.id] = quantity
+                }
+
+                setModifiedOrder(newOrder)
+              }}
+            />
+            <Pressable
+              onPress={() => {
+                setModifiedOrder({
+                  ...modifiedOrder,
+                  [item.id]: (modifiedOrder[item.id] || 0) + 1
+                })
+              }}
+            >
+              <View>
+                <MaterialCommunityIcons name='plus' size={20} />
+              </View>
+            </Pressable>
+          </View>
       </ImageCard>
     )
   }
@@ -85,7 +162,7 @@ export default function OrderDetailScreen ({ navigation, route }) {
       {/* Dirección */}
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <TextRegular style={styles.details}>Deliver to:</TextRegular>
-        {editAddress
+        {editingAddress
           ? (
           <TextInput
             style={styles.input}
@@ -94,16 +171,15 @@ export default function OrderDetailScreen ({ navigation, route }) {
             placeholder='New address'
           />
             )
-          : (
-          <TextRegular style={styles.details}>{order.address}</TextRegular>
-            )}
+          : <TextRegular style={styles.details}>{order.address}</TextRegular>}
+
         <Pressable
           onPress={async () => {
-            if (editAddress) {
-              await saveOrderAddress()
+            if (editingAddress) {
+              await saveOrder()
             }
 
-            setEditAddress(!editAddress)
+            setEditingAddress(!editingAddress)
           }}
           style={({ pressed }) => [
             {
@@ -112,31 +188,52 @@ export default function OrderDetailScreen ({ navigation, route }) {
                 : GlobalStyles.brandGreen
             },
             styles.actionButton
-          ]}
-        >
+          ]}>
 
             {/* lapiz */}
-            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center', height: 2 }]}>
+            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                 <MaterialCommunityIcons name='pencil' color={'white'} size={20} />
-                <TextRegular textStyle={styles.text}>
-                    {editAddress ? 'Save' : 'Edit'}
+                <TextRegular textStyle={{ color: 'white', marginLeft: 4 }}>
+                    {editingAddress ? 'Save' : 'Edit'}
                 </TextRegular>
             </View>
         </Pressable>
       </View>
+
       {order != null && Array.isArray(order.products) && order.products.length > 0
-        ? (
-          <FlatList
+        ? <FlatList
             data={order.products}
             renderItem={renderProduct}
             keyExtractor={(item) => item.id.toString()}
+            style={{ flex: 1 }}
           />
-          )
-        : (
-          <TextRegular>This order has no products!</TextRegular>
-          )}
-      <TextRegular style={styles.total}>Total: {order.price?.toFixed(2)}€</TextRegular>
-      <TextRegular style={order.shippingCosts ? styles.shipping : styles.freeShipping}>Includes {order.shippingCosts ? order.shippingCosts.toFixed(2) + '€ of shipping' : 'free shipping'}</TextRegular>
+        : <TextRegular>This order has no products!</TextRegular>}
+
+      {Object.keys(modifiedOrder).length > 0 &&
+        <View style={styles.actionsContainer}>
+          <View style={{ flex: 1 }}>
+            <TextRegular style={GlobalStyles.headerText}>Total: {getOrderTotal().toFixed(2)}€</TextRegular>
+            <TextRegular style={getOrderSubTotal() <= 10 ? styles.shipping : styles.freeShipping}>
+              {getOrderSubTotal() < 10 ? `Shipping costs: ${order.restaurant.shippingCosts.toFixed(2)}€` : 'Free Shipping!'}
+            </TextRegular>
+          </View>
+          <Pressable
+            onPress={saveOrder}
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandPrimaryTap
+                  : GlobalStyles.brandPrimary
+              },
+              styles.actionButton
+            ]}>
+            <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+              <TextRegular textStyle={styles.text}>
+                Update order
+              </TextRegular>
+            </View>
+          </Pressable>
+        </View>}
     </View>
   )
 }
@@ -150,16 +247,10 @@ const styles = StyleSheet.create({
   details: {
     paddingHorizontal: 8
   },
-  total: {
-    ...GlobalStyles.headerText,
-    textAlign: 'right'
-  },
   shipping: {
-    textAlign: 'right',
     padding: 8
   },
   freeShipping: {
-    textAlign: 'right',
     padding: 8,
     color: GlobalStyles.brandGreen,
     fontWeight: 'bold'
@@ -167,16 +258,39 @@ const styles = StyleSheet.create({
   actionButton: {
     padding: 8,
     borderRadius: 4,
-    marginLeft: 8
-  },
-  text: {
-    color: 'white'
+    margin: 8
   },
   input: {
+    flex: 1,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    marginHorizontal: 8
+  },
+  orderInfoContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    alignItems: 'flex-end'
+  },
+  quantityContainer: {
     flex: 1,
-    marginLeft: 8,
-    paddingVertical: 4
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  quantity: {
+    borderColor: GlobalStyles.brandGreen,
+    borderWidth: 2,
+    borderRadius: 2,
+    height: 40,
+    textAlign: 'center'
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  text: {
+    fontSize: 16,
+    color: 'white',
+    alignSelf: 'center'
   }
 })

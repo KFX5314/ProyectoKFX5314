@@ -219,10 +219,6 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  productCard: {
-    flex: 1,
-    justifyContent: 'space-between'
-  },
   footerContainer: {
     padding: 10,
     alignItems: 'center'
