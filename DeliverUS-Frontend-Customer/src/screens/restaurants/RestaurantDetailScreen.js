@@ -56,7 +56,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
         <View style={styles.footerContainer}>
           {getOrderSubTotal() <= 10 &&
           <TextRegular>
-            {`Shipping costs are FREE if order price is higher than 10€`}
+            {`Shipping costs are FREE if the order price is higher than 10€.`}
           </TextRegular>}
           <TextSemiBold>
             {getOrderSubTotal() <= 10 ? `Shipping costs: ${restaurant.shippingCosts.toFixed(2)}€` : 'Free Shipping!'}
