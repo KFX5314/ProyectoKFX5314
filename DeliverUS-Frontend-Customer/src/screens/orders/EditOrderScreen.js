@@ -224,7 +224,7 @@ export default function OrderDetailScreen ({ navigation, route }) {
               await saveOrder()
               navigation.reset({
                 index: 0,
-                routes: [{ name: 'My Orders', params: { screen: 'OrdersScreen', params: { dirty: true } } }],
+                routes: [{ name: 'My Orders', params: { screen: 'OrdersScreen', params: { dirty: true } } }]
               })
             }}
             style={({ pressed }) => [

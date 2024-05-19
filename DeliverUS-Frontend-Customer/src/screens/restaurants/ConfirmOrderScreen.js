@@ -73,7 +73,7 @@ export default function ConfirmOrderScreen ({ navigation, route }) {
       })
       navigation.reset({
         index: 0,
-        routes: [{ name: 'My Orders', params: { screen: 'OrdersScreen', params: { dirty: true } } }],
+        routes: [{ name: 'My Orders', params: { screen: 'OrdersScreen', params: { dirty: true } } }]
       })
     } catch (error) {
       console.log(error)

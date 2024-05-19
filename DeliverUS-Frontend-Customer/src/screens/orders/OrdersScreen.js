@@ -5,14 +5,13 @@ import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemibold'
 
 import { AuthorizationContext } from '../../context/AuthorizationContext'
-import { getAll } from '../../api/OrderEndpoints'
+import { getAll, remove } from '../../api/OrderEndpoints'
 import { showMessage } from 'react-native-flash-message'
 import * as GlobalStyles from '../../styles/GlobalStyles'
 import ImageCard from '../../components/ImageCard'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import restaurantLogo from '../../../assets/restaurantLogo.jpeg'
 import DeleteModal from '../../components/DeleteModal'
-import { remove } from '../../api/OrderEndpoints'
 
 export default function OrdersScreen ({ navigation, route }) {
   // done
@@ -101,8 +100,7 @@ export default function OrdersScreen ({ navigation, route }) {
         <View style={styles.actionButtonsContainer}>
           <Pressable
            onPress={async () => {
-            
-            navigation.navigate('EditOrderScreen', { orderId: item.id })
+             navigation.navigate('EditOrderScreen', { orderId: item.id })
            }}
             style={({ pressed }) => [
               {
