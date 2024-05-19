@@ -64,7 +64,7 @@ export default function OrdersScreen ({ navigation, route }) {
     } else {
       setOrders(null)
     }
-  }, [loggedInUser, route])
+  }, [loggedInUser, route, route.params?.dirty])
 
   const renderOrder = ({ item }) => {
     return (

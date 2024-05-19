@@ -221,8 +221,11 @@ export default function OrderDetailScreen ({ navigation, route }) {
           </View>
           <Pressable
             onPress={ async () => {
-              saveOrder()
-              navigation.navigate('OrdersScreen')
+              await saveOrder()
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'My Orders', params: { screen: 'OrdersScreen', params: { dirty: true } } }],
+              })
             }}
             style={({ pressed }) => [
               {
