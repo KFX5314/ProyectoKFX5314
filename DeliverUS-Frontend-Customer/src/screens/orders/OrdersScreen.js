@@ -12,6 +12,7 @@ import ImageCard from '../../components/ImageCard'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import restaurantLogo from '../../../assets/restaurantLogo.jpeg'
 import DeleteModal from '../../components/DeleteModal'
+import { remove } from '../../api/OrderEndpoints'
 
 export default function OrdersScreen ({ navigation, route }) {
   // done
@@ -36,7 +37,7 @@ export default function OrdersScreen ({ navigation, route }) {
 
   const removeOrder = async (order) => {
     try {
-      // await remove(order.id) //TODO DESCOMENTAR ESTA PARTE DEL CÓDIGO, ES SOLO PA NO TENER QUE REPOBLAR LA BASE DE DATOS CADA VEZ QUE TESTEO ESTO.
+      await remove(order.id)
       await fetchOrders()
       setOrderToBeDeleted(null)
       showMessage({
@@ -99,8 +100,9 @@ export default function OrdersScreen ({ navigation, route }) {
         {item.status === 'pending' &&
         <View style={styles.actionButtonsContainer}>
           <Pressable
-           onPress={() => {
-             navigation.navigate('EditOrderScreen', { orderId: item.id, id: item.restaurant.id })
+           onPress={async () => {
+            
+            navigation.navigate('EditOrderScreen', { orderId: item.id })
            }}
             style={({ pressed }) => [
               {

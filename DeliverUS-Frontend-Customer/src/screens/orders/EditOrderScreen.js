@@ -37,7 +37,7 @@ export default function OrderDetailScreen ({ navigation, route }) {
 
   async function fetchOrderDetail () {
     try {
-      const fetchedOrder = await getOrderDetail(route.params.id)
+      const fetchedOrder = await getOrderDetail(route.params.orderId)
       setOrder(fetchedOrder)
       setNewAddress(fetchedOrder.address)
 
@@ -51,7 +51,7 @@ export default function OrderDetailScreen ({ navigation, route }) {
     } catch (error) {
       console.log(error)
       showMessage({
-        message: `There was an error while retrieving order details (id ${route.params.id}). ${error}`,
+        message: `There was an error while retrieving order details (id ${route.params.orderId}). ${error}`,
         type: 'error',
         style: GlobalStyles.flashStyle,
         titleStyle: GlobalStyles.flashTextStyle
@@ -61,7 +61,7 @@ export default function OrderDetailScreen ({ navigation, route }) {
 
   async function saveOrder () {
     try {
-      await update(route.params.id, {
+      await update(route.params.orderId, {
         products: Object.entries(modifiedOrder).map(v => {
           return {
             quantity: v[1],
@@ -73,7 +73,7 @@ export default function OrderDetailScreen ({ navigation, route }) {
     } catch (error) {
       console.log(error)
       showMessage({
-        message: `There was an error while updating order address (id ${route.params.id}). ${error}`,
+        message: `There was an error while updating order address (id ${route.params.orderId}). ${error}`,
         type: 'error',
         style: GlobalStyles.flashStyle,
         titleStyle: GlobalStyles.flashTextStyle
@@ -218,7 +218,10 @@ export default function OrderDetailScreen ({ navigation, route }) {
             </TextRegular>
           </View>
           <Pressable
-            onPress={saveOrder}
+            onPress={ async () => {
+              saveOrder()
+              navigation.navigate('OrdersScreen')
+            }}
             style={({ pressed }) => [
               {
                 backgroundColor: pressed
