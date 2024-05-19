@@ -50,8 +50,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
 
   const renderFooter = () => {
     return (
-      <View style={{ flex: 1, margin: 30 }}>
-
+      <>
         {Object.keys(order).length > 0 &&
         <View style={styles.footerContainer}>
           {getOrderSubTotal() <= 10 &&
@@ -109,8 +108,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
           </View>
 
         </View>}
-
-      </View>
+      </>
     )
   }
 
@@ -211,14 +209,17 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
   }
 
   return (
-    <FlatList
-      ListHeaderComponent={renderHeader}
-      ListFooterComponent={renderFooter}
-      ListEmptyComponent={renderEmptyProductsList}
-      data={restaurant.products}
-      renderItem={renderProduct}
-      keyExtractor={item => item.id.toString()}
-    />
+    <>
+      <FlatList
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmptyProductsList}
+        data={restaurant.products}
+        renderItem={renderProduct}
+        keyExtractor={item => item.id.toString()}
+        style={{ flex: 1 }}
+      />
+      {Object.keys(order).length > 0 && renderFooter()}
+    </>
   )
 }
 
