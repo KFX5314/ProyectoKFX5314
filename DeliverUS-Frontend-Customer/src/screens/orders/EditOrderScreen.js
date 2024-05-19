@@ -32,7 +32,7 @@ export default function OrderDetailScreen ({ navigation, route }) {
   const getOrderTotal = () => {
     const subtotal = getOrderSubTotal()
 
-    return subtotal < 10 ? subtotal + (order.restaurant.shippingCosts || 0) : subtotal
+    return subtotal <= 10 ? subtotal + (order.restaurant.shippingCosts || 0) : subtotal
   }
 
   async function fetchOrderDetail () {
@@ -212,10 +212,12 @@ export default function OrderDetailScreen ({ navigation, route }) {
       {Object.keys(modifiedOrder).length > 0 &&
         <View style={styles.actionsContainer}>
           <View style={{ flex: 1 }}>
-            <TextRegular style={GlobalStyles.headerText}>Total: {getOrderTotal().toFixed(2)}€</TextRegular>
             <TextRegular style={getOrderSubTotal() <= 10 ? styles.shipping : styles.freeShipping}>
-              {getOrderSubTotal() < 10 ? `Shipping costs: ${order.restaurant.shippingCosts.toFixed(2)}€` : 'Free Shipping!'}
+              {getOrderSubTotal() <= 10 ? `Shipping costs: ${order.restaurant.shippingCosts.toFixed(2)}€` : 'Free Shipping!'}
             </TextRegular>
+            <TextRegular style={GlobalStyles.headerText}>
+              Total: {getOrderTotal().toFixed(2)}€
+              </TextRegular>
           </View>
           <Pressable
             onPress={ async () => {
