@@ -71,7 +71,10 @@ export default function ConfirmOrderScreen ({ navigation, route }) {
         style: GlobalStyles.flashStyle,
         titleStyle: GlobalStyles.flashTextStyle
       })
-      navigation.navigate('My Orders', { screen: 'OrdersScreen', params: { dirty: true } })
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'My Orders', params: { screen: 'OrdersScreen', params: { dirty: true } } }],
+      })
     } catch (error) {
       console.log(error)
       setBackendErrors(error.errors)
