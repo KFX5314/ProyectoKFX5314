@@ -40,6 +40,7 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
             <TextSemiBold textStyle={styles.textTitle}>{restaurant.name}</TextSemiBold>
             <Image style={styles.image} source={restaurant.logo ? { uri: process.env.API_BASE_URL + '/' + restaurant.logo } : undefined} />
             <TextRegular textStyle={styles.description}>{restaurant.description}</TextRegular>
+            <TextRegular textStyle={styles.description}>Total price: {getOrderTotal().toFixed(2)}€</TextRegular>
             <TextRegular textStyle={styles.description}>{restaurant.restaurantCategory ? restaurant.restaurantCategory.name : ''}</TextRegular>
           </View>
         </ImageBackground>
@@ -72,19 +73,18 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
               ]}>
               <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
                 <TextRegular textStyle={styles.text}>
-                  Cancel order
+                  Cancel
                 </TextRegular>
               </View>
             </Pressable>
             <Pressable
               onPress={() => {
                 loggedInUser
-                  ? navigation.navigate('My Orders', {
-                    screen: 'ConfirmOrderScreen',
-                    params: {
-                      order,
-                      id: route.params.id
-                    }
+                  ? navigation.navigate('ConfirmOrderScreen', {
+                    order,
+                    totalCost: getOrderTotal(),
+                    shippingCosts: getOrderSubTotal() <= 10 ? restaurant.shippingCosts : 0,
+                    id: route.params.id
                   })
                   : navigation.navigate('Profile', { screen: 'LoginScreen' })
               }}
