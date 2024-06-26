@@ -1,4 +1,6 @@
 ### Transaction
+import { sequelizeSession, Restaurant, Product, RestaurantCategory, ProductCategory } from '../models/models.js'
+
 const promote = async function (req, res) {
   const t = await sequelizeSession.transaction()
   try {
