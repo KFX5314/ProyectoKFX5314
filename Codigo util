@@ -1,0 +1,58 @@
+### Transaction
+const promote = async function (req, res) {
+  const t = await sequelizeSession.transaction()
+  try {
+    const existingPromotedRestaurant = await Restaurant.findOne({where: {userId: req.user.id, promoted: true}})
+    if (existingPromotedRestaurant) {
+      await Restaurant.update(
+        {promoted: false},
+        {where: {id: existingPromotedRestaurant.id}},
+        {transaction: t}
+      )
+    }
+    await Restaurant.update(
+      {promoted: true},
+      {where: {id: req.params.restaurantId}},
+      {transaction: t}      
+    )
+    await t.commit();
+    const updatedRestaurant = await Restaurant.findByPk(req.params.restaurantId)
+    res.json(updatedRestaurant)
+  }
+  catch(err) {
+    await t.rollback()
+    res.status(500).send(err)
+  }
+}
+
+
+## ImageCard
+      <ImageCard
+        imageUri={item.image ? { uri: process.env.API_BASE_URL + '/' + item.image } : defaultProductImage}
+        title={
+          <>
+            <TextRegular> {item.name} </TextRegular>
+            {item.promoted && <TextRegular style = {{color: 'red'}}> { item.name + ' Discount: '+restaurant.discount+'% Off'} </TextRegular>}
+          </>
+        }
+      >
+...
+</ImageCard>
+
+## Operadores sequelize
+        where: { // Solution (pro)
+          visibleUntil: { [Sequelize.Op.or]: [{ [Sequelize.Op.eq]: null }, { [Sequelize.Op.gt]: currentDate }] }
+        },
+## Validation
+  // Solution
+  check('visibleUntil').optional().isDate().toDate(),
+  check('visibleUntil').custom((value, { req }) => {
+    const currentDate = new Date()
+    if (value && value < currentDate) {
+      return Promise.reject(new Error('The visibility must finish after the current date.'))
+    } else { return Promise.resolve() }
+  }),
+
+## Bucle for
+for (const restaurante of restaurants){}
+SI SE TE OLVIDA UN AWAIT PUEDE DAR 404
