@@ -1,0 +1,5 @@
+Recuerda en el Modal poner en isVisible lo mismo que se le pasa como parámetro al onConfirm. Varias veces he dejado el state del remove por copiar y pegar.
+
+Al hacer findByPK() no hay que pasarle where:{}, solo el id.
+
+SI SE TE OLVIDA UN AWAIT TE PUEDE DAR UN 404 PQ NO LE DA TIEMPO A ENCONTRARLO.
