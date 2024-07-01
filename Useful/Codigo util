@@ -1,3 +1,33 @@
+### Op
+import { Op } from 'sequelize'
+const indexOwner = async function (req, res) {
+  try {
+    const pinned = await Restaurant.findAll(
+      {
+        attributes: { exclude: ['userId'] },
+        where: { userId: req.user.id, pinnedAt:{ [Op.ne]: null }},
+        include: [{
+          model: RestaurantCategory,
+          as: 'restaurantCategory'
+        }],
+        order: [['pinnedAt','ASC']]
+      })
+    const notPinned = await Restaurant.findAll(
+      {
+        attributes: { exclude: ['userId'] },
+        where: { userId: req.user.id, pinnedAt:{[Op.eq]: null }},
+        include: [{
+          model: RestaurantCategory,
+          as: 'restaurantCategory'
+        }]
+      })
+    const restaurants = [...pinned, ...notPinned]
+    res.json(restaurants)
+  } catch (err) {
+    res.status(500).send(err)
+  }
+}
+
 ### Cambiar icono
 <MaterialCommunityIcons
     name={item.pinnedAt ? 'pin' : 'pin-outline'}
