@@ -1,3 +1,10 @@
+### Cambiar icono
+<MaterialCommunityIcons
+    name={item.pinnedAt ? 'pin' : 'pin-outline'}
+    color={GlobalStyles.brandSecondaryTap}
+    size={24}
+/>
+
 ### Transaction
 import { sequelizeSession, Restaurant, Product, RestaurantCategory, ProductCategory } from '../models/models.js'
 
