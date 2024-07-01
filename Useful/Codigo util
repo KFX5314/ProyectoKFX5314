@@ -111,3 +111,8 @@ SI SE TE OLVIDA UN AWAIT PUEDE DAR 404
     return daysLeft <= 7
   }
 
+## Texto
+<View>
+  <Text style={{textAlign: 'right'}}>Hello, World!</Text>
+</View>
+
